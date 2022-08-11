@@ -15,7 +15,7 @@ pub fn generate_negotiate_response(
     result.push_str("\"");
 
     if let Some(connection_token) = connection_token {
-        result.push_str("\",\"connectionToken\":\"");
+        result.push_str(",\"connectionToken\":\"");
         result.push_str(connection_token.as_str());
         result.push_str("\"")
     }
