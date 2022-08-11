@@ -9,6 +9,15 @@ use rust_extensions::{
 };
 use tokio::sync::Mutex;
 
+pub enum SignalRParam<'s> {
+    JsonObject(&'s JsonObjectWriter),
+    String(&'s str),
+    Number(i64),
+    Float(f64),
+    Boolean(bool),
+    None,
+}
+
 pub struct MySignalrConnectionSingleThreaded {
     web_socket: Option<Arc<MyWebSocket>>,
     long_pooling: Option<TaskCompletion<String, String>>,
@@ -95,22 +104,47 @@ impl MySignalrConnection {
         self.last_incoming_moment.as_date_time()
     }
 
-    pub async fn send_json(&self, action_name: &str, message: &JsonObjectWriter) {
+    pub async fn send_json_as_parameter<'s>(&self, action_name: &str, message: SignalRParam<'s>) {
         let web_socket = {
             let read_access = self.single_threaded.lock().await;
             read_access.web_socket.clone()
         };
 
-        let mut result = Vec::new();
-
-        result.extend_from_slice("{\"type\":1,\"target\":\"".as_bytes());
-        result.extend_from_slice(action_name.as_bytes());
-        result.extend_from_slice("\",\"arguments\":[".as_bytes());
-        message.build_into(&mut result);
-        result.extend_from_slice("]}".as_bytes());
-        result.push(30);
-
         if let Some(web_socket) = web_socket {
+            let mut result = Vec::new();
+
+            result.extend_from_slice("{\"type\":1,\"target\":\"".as_bytes());
+            result.extend_from_slice(action_name.as_bytes());
+            result.extend_from_slice("\",\"arguments\":[".as_bytes());
+            match message {
+                SignalRParam::JsonObject(json_writer) => {
+                    json_writer.build_into(&mut result);
+                }
+                SignalRParam::String(value) => {
+                    let json_string = my_json::EscapedJsonString::new(value);
+                    result.push(b'"');
+                    result.extend_from_slice(json_string.as_str().as_bytes());
+                    result.push(b'"');
+                }
+                SignalRParam::Number(number) => {
+                    result.extend_from_slice(number.to_string().as_bytes());
+                }
+                SignalRParam::Float(value) => {
+                    result.extend_from_slice(value.to_string().as_bytes());
+                }
+                SignalRParam::Boolean(value) => {
+                    if value {
+                        result.extend_from_slice("true".as_bytes());
+                    } else {
+                        result.extend_from_slice("false".as_bytes());
+                    }
+                }
+                SignalRParam::None => {}
+            }
+
+            result.extend_from_slice("]}".as_bytes());
+            result.push(30);
+
             web_socket
                 .send_message(Message::Text(String::from_utf8(result).unwrap()))
                 .await;
