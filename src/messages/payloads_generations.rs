@@ -26,3 +26,7 @@ pub fn generate_negotiate_response(
 
     result
 }
+
+pub fn get_ping_payload() -> &'static str {
+    "{\"type\":6}"
+}
