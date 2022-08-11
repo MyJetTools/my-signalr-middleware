@@ -36,7 +36,7 @@ pub async fn process_connect(
     let signalr_connection = Arc::new(signalr_connection);
 
     connections_callback
-        .connected(signalr_connection.clone())
+        .connected(&signalr_connection)
         .await
         .unwrap();
 

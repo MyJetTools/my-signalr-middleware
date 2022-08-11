@@ -101,7 +101,12 @@ impl my_http_server_web_sockets::MyWebSockeCallback for WebSocketCallbacks {
                     if packet_type == "1" {
                         let message = SignalrMessage::parse(value);
                         self.my_signal_r_callbacks
-                            .on(message.headers, message.target, message.arguments)
+                            .on(
+                                signalr_connection,
+                                message.headers,
+                                message.target,
+                                message.arguments,
+                            )
                             .await;
                     }
 

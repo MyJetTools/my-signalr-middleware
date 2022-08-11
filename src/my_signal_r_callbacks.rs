@@ -8,8 +8,14 @@ use crate::MySignalrConnection;
 pub trait MySignalrCallbacks {
     async fn connected(
         &self,
-        signalr_connection: Arc<MySignalrConnection>,
+        signalr_connection: &Arc<MySignalrConnection>,
     ) -> Result<(), HttpFailResult>;
-    async fn disconnected(&self, signalr_connection: Arc<MySignalrConnection>);
-    async fn on(&self, headers: Option<HashMap<String, String>>, action_name: &str, data: &str);
+    async fn disconnected(&self, signalr_connection: &Arc<MySignalrConnection>);
+    async fn on(
+        &self,
+        signalr_connection: &Arc<MySignalrConnection>,
+        headers: Option<HashMap<String, String>>,
+        action_name: &str,
+        data: &str,
+    );
 }

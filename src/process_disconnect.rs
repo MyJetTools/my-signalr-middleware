@@ -17,6 +17,6 @@ pub async fn process_disconnect(
             "Signalr {} is diconnectd with connection token {:?}",
             removed_connection.connection_id, removed_connection.connection_token
         );
-        connect_events.disconnected(removed_connection).await;
+        connect_events.disconnected(&removed_connection).await;
     }
 }
