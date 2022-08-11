@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 
 use my_http_server::HttpFailResult;
 
@@ -11,5 +11,5 @@ pub trait MySignalrCallbacks {
         signalr_connection: Arc<MySignalrConnection>,
     ) -> Result<(), HttpFailResult>;
     async fn disconnected(&self, signalr_connection: Arc<MySignalrConnection>);
-    async fn on(&self, action_name: &str, data: &str);
+    async fn on(&self, headers: Option<HashMap<String, String>>, action_name: &str, data: &str);
 }

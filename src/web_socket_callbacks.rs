@@ -5,7 +5,9 @@ use my_http_server::HttpFailResult;
 use my_http_server_web_sockets::{MyWebSocket, WebSocketMessage};
 use my_json::json_reader::JsonFirstLineReader;
 
-use crate::{signal_r_list::SignalrList, MySignalrCallbacks, MySignalrConnection};
+use crate::{
+    messages::SignalrMessage, signal_r_list::SignalrList, MySignalrCallbacks, MySignalrConnection,
+};
 
 const DISCONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 
@@ -95,6 +97,13 @@ impl my_http_server_web_sockets::MyWebSockeCallback for WebSocketCallbacks {
             if let WebSocketMessage::String(value) = &message {
                 if signalr_connection.get_has_greeting() {
                     let packet_type = get_payload_type(value);
+
+                    if packet_type == "1" {
+                        let message = SignalrMessage::parse(value);
+                        self.my_signal_r_callbacks
+                            .on(message.headers, message.target, message.arguments)
+                            .await;
+                    }
 
                     if packet_type == "6" {
                         signalr_connection
