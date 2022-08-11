@@ -84,7 +84,7 @@ impl MySignalrConnection {
         self.last_incoming_moment.as_date_time()
     }
 
-    pub async fn send(&self, action_name: &str, message: &JsonObjectWriter) {
+    pub async fn send_json(&self, action_name: &str, message: &JsonObjectWriter) {
         let web_socket = {
             let read_access = self.single_threaded.lock().await;
             read_access.web_socket.clone()
