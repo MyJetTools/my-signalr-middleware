@@ -2,7 +2,7 @@ use std::sync::{atomic::AtomicBool, Arc};
 
 use hyper_tungstenite::tungstenite::Message;
 use my_http_server_web_sockets::MyWebSocket;
-use my_json::json_writer::{JsonArrayWriter, JsonObjectWriter};
+use my_json::json_writer::JsonObjectWriter;
 use rust_extensions::{
     date_time::{AtomicDateTimeAsMicroseconds, DateTimeAsMicroseconds},
     TaskCompletion,
