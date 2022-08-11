@@ -4,11 +4,11 @@ use crate::{signal_r_list::SignalrList, MySignalrCallbacks, MySignalrConnection}
 
 pub async fn process_disconnect(
     sockets_list: &Arc<SignalrList>,
-    socket_io_connection: &Arc<MySignalrConnection>,
+    signalr_connection: &Arc<MySignalrConnection>,
     connect_events: &Arc<dyn MySignalrCallbacks + Send + Sync + 'static>,
 ) {
     let removed_connection = sockets_list
-        .remove(socket_io_connection.connection_token.as_str())
+        .remove(signalr_connection.connection_token.as_str())
         .await;
 
     if let Some(removed_connection) = removed_connection {

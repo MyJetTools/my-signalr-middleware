@@ -39,11 +39,11 @@ impl my_http_server_web_sockets::MyWebSockeCallback for WebSocketCallbacks {
                 .assign_web_socket(connection_token.value, my_web_socket.clone())
                 .await
             {
-                Some(socket_io) => {
-                    tokio::spawn(super::socket_io_livness_loop::start(
+                Some(signalr_connection) => {
+                    tokio::spawn(super::signalr_liveness_loop::start(
                         self.my_signal_r_callbacks.clone(),
                         self.signalr_list.clone(),
-                        socket_io,
+                        signalr_connection,
                         DISCONNECT_TIMEOUT,
                     ));
                 }
@@ -71,9 +71,13 @@ impl my_http_server_web_sockets::MyWebSockeCallback for WebSocketCallbacks {
             .get_by_web_socket_id(my_web_socket.id)
             .await;
 
-        if let Some(socket_io) = find_result {
-            crate::process_disconnect(&self.signalr_list, &socket_io, &self.my_signal_r_callbacks)
-                .await;
+        if let Some(signalr_connection) = find_result {
+            crate::process_disconnect(
+                &self.signalr_list,
+                &signalr_connection,
+                &self.my_signal_r_callbacks,
+            )
+            .await;
         }
     }
     async fn on_message(&self, my_web_socket: Arc<MyWebSocket>, message: WebSocketMessage) {
@@ -85,18 +89,20 @@ impl my_http_server_web_sockets::MyWebSockeCallback for WebSocketCallbacks {
             .get_by_web_socket_id(my_web_socket.id)
             .await;
 
-        if let Some(socket_io_ref) = signal_r.as_ref() {
-            socket_io_ref.update_incoming_activity();
+        if let Some(signalr_connection) = signal_r.as_ref() {
+            signalr_connection.update_incoming_activity();
 
             if let WebSocketMessage::String(value) = &message {
-                if socket_io_ref.get_has_greeting() {
+                if signalr_connection.get_has_greeting() {
                     let packet_type = get_payload_type(value);
 
                     if packet_type == "6" {
-                        socket_io_ref.send_message("{\"type\":6}".to_string()).await;
+                        signalr_connection
+                            .send_message("{\"type\":6}".to_string())
+                            .await;
                     }
                 } else {
-                    read_first_payload(socket_io_ref, value).await
+                    read_first_payload(signalr_connection, value).await
                 }
             }
         }
@@ -116,7 +122,7 @@ fn get_payload_type(payload: &str) -> &str {
     panic!("Packet type is not found")
 }
 
-async fn read_first_payload(socket_io_ref: &Arc<MySignalrConnection>, payload: &str) {
+async fn read_first_payload(signalr_connection: &Arc<MySignalrConnection>, payload: &str) {
     let json_reader = JsonFirstLineReader::new(payload.as_bytes());
 
     let mut protocol = false;
@@ -134,7 +140,7 @@ async fn read_first_payload(socket_io_ref: &Arc<MySignalrConnection>, payload: &
     }
 
     if protocol == true && version == true {
-        socket_io_ref.set_has_greeting();
-        socket_io_ref.send_message("{}".to_string()).await;
+        signalr_connection.set_has_greeting();
+        signalr_connection.send_message("{}".to_string()).await;
     }
 }

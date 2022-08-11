@@ -6,7 +6,7 @@ use crate::{signal_r_list::SignalrList, MySignalrCallbacks, MySignalrConnection}
 
 pub async fn process_connect(
     connections_callback: &Arc<dyn MySignalrCallbacks + Send + Sync + 'static>,
-    socket_io_list: &Arc<SignalrList>,
+    signalr_list: &Arc<SignalrList>,
     web_socket: Option<Arc<MyWebSocket>>,
 ) -> (Arc<MySignalrConnection>, String) {
     let connection_id = uuid::Uuid::new_v4().to_string();
@@ -20,17 +20,17 @@ pub async fn process_connect(
         conenction_token.as_str(),
     );
 
-    let socket_io = MySignalrConnection::new(connection_id, conenction_token, web_socket);
-    let socket_io_connection = Arc::new(socket_io);
+    let signalr_connection = MySignalrConnection::new(connection_id, conenction_token, web_socket);
+    let signalr_connection = Arc::new(signalr_connection);
 
     connections_callback
-        .connected(socket_io_connection.clone())
+        .connected(signalr_connection.clone())
         .await
         .unwrap();
 
-    socket_io_list
-        .add_socket_io(socket_io_connection.clone())
+    signalr_list
+        .add_signalr_connection(signalr_connection.clone())
         .await;
 
-    (socket_io_connection, result)
+    (signalr_connection, result)
 }

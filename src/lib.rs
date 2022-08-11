@@ -5,7 +5,7 @@ mod process_connect;
 mod process_disconnect;
 mod signal_r_connection;
 mod signal_r_list;
-mod socket_io_livness_loop;
+mod signalr_liveness_loop;
 mod web_socket_callbacks;
 pub use middleware::*;
 pub use my_signal_r_callbacks::*;

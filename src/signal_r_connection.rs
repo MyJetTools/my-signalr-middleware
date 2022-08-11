@@ -101,7 +101,7 @@ impl MySignalrConnection {
         if let Some(old_websocket) = write_access.web_socket.replace(web_socket) {
             old_websocket
                 .send_message(hyper_tungstenite::tungstenite::Message::Text(format!(
-                    "SocketIO WebSocket {} has been kicked by Websocket {} ",
+                    "Signalr WebSocket {} has been kicked by Websocket {} ",
                     old_websocket.id, new_id
                 )))
                 .await;

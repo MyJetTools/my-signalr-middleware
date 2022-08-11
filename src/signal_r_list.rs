@@ -24,7 +24,7 @@ impl SignalrList {
         }
     }
 
-    pub async fn add_socket_io(&self, signalr_connection: Arc<MySignalrConnection>) {
+    pub async fn add_signalr_connection(&self, signalr_connection: Arc<MySignalrConnection>) {
         let web_socket = signalr_connection.get_web_socket().await;
         let mut write_access = self.sockets.write().await;
         write_access.sockets_by_connection_token.insert(
@@ -89,23 +89,23 @@ impl SignalrList {
 
     pub async fn get_by_web_socket_id(
         &self,
-        web_socket_io: i64,
+        web_socket_id: i64,
     ) -> Option<Arc<MySignalrConnection>> {
         let read_access = self.sockets.read().await;
-        let result = read_access.sockets_by_web_socket_id.get(&web_socket_io)?;
+        let result = read_access.sockets_by_web_socket_id.get(&web_socket_id)?;
         Some(result.clone())
     }
 
     pub async fn remove(&self, connection_token: &str) -> Option<Arc<MySignalrConnection>> {
-        let removed_socket_io = {
+        let removed_signalr_connection = {
             let mut write_access = self.sockets.write().await;
             write_access
                 .sockets_by_connection_token
                 .remove(connection_token)
         };
 
-        if let Some(removed_socket_io) = &removed_socket_io {
-            let web_socket = removed_socket_io.disconnect().await;
+        if let Some(removed_signalr_connection) = &removed_signalr_connection {
+            let web_socket = removed_signalr_connection.disconnect().await;
             if let Some(web_socket) = web_socket {
                 let mut write_access = self.sockets.write().await;
                 write_access.sockets_by_web_socket_id.remove(&web_socket.id);
@@ -114,6 +114,6 @@ impl SignalrList {
             return None;
         }
 
-        removed_socket_io
+        removed_signalr_connection
     }
 }
