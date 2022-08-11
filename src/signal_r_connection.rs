@@ -108,6 +108,7 @@ impl MySignalrConnection {
         result.extend_from_slice("\",\"arguments\":[{\"data\":[".as_bytes());
         message.build_into(&mut result);
         result.extend_from_slice("]}".as_bytes());
+        result.push(30);
 
         if let Some(web_socket) = web_socket {
             web_socket
