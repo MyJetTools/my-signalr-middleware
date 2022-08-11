@@ -24,8 +24,6 @@ pub async fn process_connect(
         &conenction_token,
     );
 
-    result.push(30 as char);
-
     let signalr_connection = MySignalrConnection::new(
         connection_id,
         conenction_token,
