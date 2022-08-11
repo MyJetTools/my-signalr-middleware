@@ -21,7 +21,7 @@ pub fn generate_negotiate_response(
     }
 
     result.push_str(
-        ",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\"]}]}",
+        ",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\", \"Binary\"]}]}",
     );
 
     result
