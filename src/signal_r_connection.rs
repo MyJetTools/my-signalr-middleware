@@ -116,11 +116,13 @@ impl MySignalrConnection {
         }
     }
 
-    pub async fn send_raw_payload(&self, raw_payload: String) {
+    pub async fn send_raw_payload(&self, mut raw_payload: String) {
         let web_socket = {
             let read_access = self.single_threaded.lock().await;
             read_access.web_socket.clone()
         };
+
+        raw_payload.push(30 as char);
 
         if let Some(web_socket) = web_socket {
             web_socket.send_message(Message::Text(raw_payload)).await;
