@@ -11,7 +11,6 @@ pub async fn process_connect(
     web_socket: Option<Arc<MyWebSocket>>,
 ) -> (Arc<MySignalrConnection>, String) {
     let connection_id = uuid::Uuid::new_v4().to_string();
-    let connection_id = connection_id.replace("-", "")[..10].to_string();
 
     let conenction_token = if negotiation_version == 0 {
         None
