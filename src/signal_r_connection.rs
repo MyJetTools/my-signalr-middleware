@@ -104,7 +104,7 @@ impl MySignalrConnection {
         self.last_incoming_moment.as_date_time()
     }
 
-    pub async fn send_json_as_parameter<'s>(&self, action_name: &str, message: SignalRParam<'s>) {
+    pub async fn send<'s>(&self, action_name: &str, parameter: SignalRParam<'s>) {
         let web_socket = {
             let read_access = self.single_threaded.lock().await;
             read_access.web_socket.clone()
@@ -116,7 +116,7 @@ impl MySignalrConnection {
             result.extend_from_slice("{\"type\":1,\"target\":\"".as_bytes());
             result.extend_from_slice(action_name.as_bytes());
             result.extend_from_slice("\",\"arguments\":[".as_bytes());
-            match message {
+            match parameter {
                 SignalRParam::JsonObject(json_writer) => {
                     json_writer.build_into(&mut result);
                 }
