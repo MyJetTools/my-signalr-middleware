@@ -55,6 +55,7 @@ impl MySignalrMiddleware {
         &self,
         ctx: &mut HttpContext,
     ) -> Result<HttpOkResult, HttpFailResult> {
+        println!("handle_negotiate_request");
         let query_string_result = ctx.request.get_query_string();
 
         let negotiation_version = match query_string_result {
