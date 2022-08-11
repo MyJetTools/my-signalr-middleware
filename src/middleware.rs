@@ -53,10 +53,28 @@ impl MySignalrMiddleware {
 
     async fn handle_negotiate_request(
         &self,
-        _ctx: &mut HttpContext,
+        ctx: &mut HttpContext,
     ) -> Result<HttpOkResult, HttpFailResult> {
-        let (_, response) =
-            crate::process_connect(&self.my_signal_r_callbacks, &self.signalr_list, None).await;
+        let query_string_result = ctx.request.get_query_string();
+
+        let negotiation_version = match query_string_result {
+            Ok(value) => {
+                if let Some(result) = value.get_optional("negotiateVersion") {
+                    result.value.parse::<usize>().unwrap()
+                } else {
+                    0
+                }
+            }
+            Err(_) => 0,
+        };
+
+        let (_, response) = crate::process_connect(
+            &self.my_signal_r_callbacks,
+            &self.signalr_list,
+            negotiation_version,
+            None,
+        )
+        .await;
         HttpOutput::Content {
             headers: None,
             content_type: Some(WebContentType::Text),

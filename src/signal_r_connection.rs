@@ -17,18 +17,20 @@ pub struct MySignalrConnectionSingleThreaded {
 pub struct MySignalrConnection {
     single_threaded: Mutex<MySignalrConnectionSingleThreaded>,
     pub connection_id: String,
-    pub connection_token: String,
+    pub connection_token: Option<String>,
     pub created: DateTimeAsMicroseconds,
     pub last_incoming_moment: AtomicDateTimeAsMicroseconds,
     connected: AtomicBool,
     has_web_socket: AtomicBool,
     has_greeting: AtomicBool,
+    pub negotiation_version: usize,
 }
 
 impl MySignalrConnection {
     pub fn new(
         connection_id: String,
-        connection_token: String,
+        connection_token: Option<String>,
+        negotiation_version: usize,
         web_socket: Option<Arc<MyWebSocket>>,
     ) -> Self {
         let has_web_socket = web_socket.is_some();
@@ -39,11 +41,20 @@ impl MySignalrConnection {
             }),
             connection_id,
             connection_token,
+            negotiation_version,
             created: DateTimeAsMicroseconds::now(),
             last_incoming_moment: AtomicDateTimeAsMicroseconds::now(),
             connected: AtomicBool::new(true),
             has_web_socket: AtomicBool::new(has_web_socket),
             has_greeting: AtomicBool::new(false),
+        }
+    }
+
+    pub fn get_list_index(&self) -> &str {
+        if let Some(token) = self.connection_token.as_ref() {
+            token
+        } else {
+            &self.connection_id
         }
     }
 

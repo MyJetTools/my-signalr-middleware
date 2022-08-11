@@ -28,7 +28,7 @@ impl SignalrList {
         let web_socket = signalr_connection.get_web_socket().await;
         let mut write_access = self.sockets.write().await;
         write_access.sockets_by_connection_token.insert(
-            signalr_connection.connection_token.clone(),
+            signalr_connection.get_list_index().to_string(),
             signalr_connection.clone(),
         );
 

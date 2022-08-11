@@ -8,12 +8,12 @@ pub async fn process_disconnect(
     connect_events: &Arc<dyn MySignalrCallbacks + Send + Sync + 'static>,
 ) {
     let removed_connection = sockets_list
-        .remove(signalr_connection.connection_token.as_str())
+        .remove(signalr_connection.get_list_index())
         .await;
 
     if let Some(removed_connection) = removed_connection {
         println!(
-            "Signalr {} is diconnectd with connection token {}",
+            "Signalr {} is diconnectd with connection token {:?}",
             removed_connection.connection_id, removed_connection.connection_token
         );
         connect_events.disconnected(removed_connection).await;

@@ -11,7 +11,7 @@ pub async fn start(
     ping_disconnect: Duration,
 ) {
     println!(
-        "Signalr {} with connection token {} started livness loop",
+        "Signalr {} with connection token {:?} started livness loop",
         my_socket_io_connection.connection_id, my_socket_io_connection.connection_token
     );
 
@@ -23,7 +23,7 @@ pub async fn start(
 
         if now.duration_since(last_incoming).as_positive_or_zero() > ping_disconnect {
             println!(
-                "Signalr {} with connection token {} looks like dead. Disconnecting",
+                "Signalr {} with connection token {:?} looks like dead. Disconnecting",
                 my_socket_io_connection.connection_id, my_socket_io_connection.connection_token
             );
             break;
