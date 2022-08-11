@@ -6,7 +6,7 @@ pub struct SignalrMessage<'s> {
     pub headers: Option<HashMap<String, String>>,
     pub invocation_id: Option<&'s str>,
     pub target: &'s str,
-    pub arguments: &'s str,
+    pub arguments: &'s [u8],
 }
 
 impl<'s> SignalrMessage<'s> {
@@ -26,7 +26,7 @@ impl<'s> SignalrMessage<'s> {
                 }
                 "arguments" => {
                     let result = line.get_value().unwrap();
-                    arguments = result.as_str();
+                    arguments = result.as_bytes();
                 }
                 "target" => {
                     let result = line.get_value().unwrap();

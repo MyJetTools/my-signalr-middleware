@@ -16,6 +16,6 @@ pub trait MySignalrCallbacks {
         signalr_connection: &Arc<MySignalrConnection>,
         headers: Option<HashMap<String, String>>,
         action_name: &str,
-        data: &str,
+        data: &[u8],
     );
 }
