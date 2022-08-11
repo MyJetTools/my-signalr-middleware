@@ -19,8 +19,11 @@ pub async fn process_connect(
         Some(uuid::Uuid::new_v4().to_string())
     };
 
-    let result =
-        crate::messages::generate_negotiate_response(connection_id.as_str(), &conenction_token);
+    let result = crate::messages::generate_negotiate_response(
+        negotiation_version,
+        connection_id.as_str(),
+        &conenction_token,
+    );
 
     let signalr_connection = MySignalrConnection::new(
         connection_id,

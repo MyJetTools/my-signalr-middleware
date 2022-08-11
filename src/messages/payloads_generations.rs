@@ -1,10 +1,16 @@
 pub fn generate_negotiate_response(
+    negotiate_version: usize,
     connection_id: &str,
     connection_token: &Option<String>,
 ) -> String {
     let mut result = String::new();
 
-    result.push_str("{\"negotiateVersion\":1,\"connectionId\":\"");
+    result.push_str("{\"negotiateVersion\":");
+
+    result.push_str(negotiate_version.to_string().as_str());
+
+    result.push_str(",\"connectionId\":\"");
+
     result.push_str(connection_id);
     result.push_str("\"");
 
