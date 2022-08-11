@@ -98,7 +98,7 @@ impl my_http_server_web_sockets::MyWebSockeCallback for WebSocketCallbacks {
 
                     if packet_type == "6" {
                         signalr_connection
-                            .send_message("{\"type\":6}".to_string())
+                            .send_raw_payload("{\"type\":6}".to_string())
                             .await;
                     }
                 } else {
@@ -141,6 +141,6 @@ async fn read_first_payload(signalr_connection: &Arc<MySignalrConnection>, paylo
 
     if protocol == true && version == true {
         signalr_connection.set_has_greeting();
-        signalr_connection.send_message("{}".to_string()).await;
+        signalr_connection.send_raw_payload("{}".to_string()).await;
     }
 }

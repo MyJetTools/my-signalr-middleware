@@ -2,6 +2,7 @@ use std::sync::{atomic::AtomicBool, Arc};
 
 use hyper_tungstenite::tungstenite::Message;
 use my_http_server_web_sockets::MyWebSocket;
+use my_json::json_writer::{JsonArrayWriter, JsonObjectWriter};
 use rust_extensions::{
     date_time::{AtomicDateTimeAsMicroseconds, DateTimeAsMicroseconds},
     TaskCompletion,
@@ -83,14 +84,35 @@ impl MySignalrConnection {
         self.last_incoming_moment.as_date_time()
     }
 
-    pub async fn send_message(&self, message: String) {
+    pub async fn send(&self, action_name: &str, message: &JsonObjectWriter) {
+        let web_socket = {
+            let read_access = self.single_threaded.lock().await;
+            read_access.web_socket.clone()
+        };
+
+        let mut result = Vec::new();
+
+        result.extend_from_slice("{\"type\":1,\"target\":\"".as_bytes());
+        result.extend_from_slice(action_name.as_bytes());
+        result.extend_from_slice("\",\"arguments\":[{\"data\":[".as_bytes());
+        message.build_into(&mut result);
+        result.extend_from_slice("]}".as_bytes());
+
+        if let Some(web_socket) = web_socket {
+            web_socket
+                .send_message(Message::Text(String::from_utf8(result).unwrap()))
+                .await;
+        }
+    }
+
+    pub async fn send_raw_payload(&self, raw_payload: String) {
         let web_socket = {
             let read_access = self.single_threaded.lock().await;
             read_access.web_socket.clone()
         };
 
         if let Some(web_socket) = web_socket {
-            web_socket.send_message(Message::Text(message)).await;
+            web_socket.send_message(Message::Text(raw_payload)).await;
         }
     }
 
