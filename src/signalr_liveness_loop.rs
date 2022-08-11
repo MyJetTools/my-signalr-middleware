@@ -28,10 +28,6 @@ pub async fn start(
             );
             break;
         }
-
-        my_socket_io_connection
-            .send_raw_payload(crate::messages::get_ping_payload().to_string())
-            .await;
     }
 
     crate::process_disconnect(&sockets_list, &my_socket_io_connection, &connect_events).await;
