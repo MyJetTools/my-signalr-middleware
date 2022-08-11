@@ -55,6 +55,7 @@ impl MySignalrMiddleware {
         &self,
         ctx: &mut HttpContext,
     ) -> Result<HttpOkResult, HttpFailResult> {
+        #[cfg(feature = "debug_ws")]
         println!("handle_negotiate_request");
         let query_string_result = ctx.request.get_query_string();
 

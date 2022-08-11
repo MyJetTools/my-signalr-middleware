@@ -12,6 +12,7 @@ pub async fn process_disconnect(
         .await;
 
     if let Some(removed_connection) = removed_connection {
+        #[cfg(feature = "debug_ws")]
         println!(
             "Signalr {} is diconnectd with connection token {:?}",
             removed_connection.connection_id, removed_connection.connection_token

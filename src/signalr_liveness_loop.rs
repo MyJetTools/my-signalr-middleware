@@ -10,6 +10,7 @@ pub async fn start(
     my_socket_io_connection: Arc<MySignalrConnection>,
     ping_disconnect: Duration,
 ) {
+    #[cfg(feature = "debug_ws")]
     println!(
         "Signalr {} with connection token {:?} started livness loop",
         my_socket_io_connection.connection_id, my_socket_io_connection.connection_token
@@ -22,6 +23,7 @@ pub async fn start(
         let last_incoming = my_socket_io_connection.get_last_incoming();
 
         if now.duration_since(last_incoming).as_positive_or_zero() > ping_disconnect {
+            #[cfg(feature = "debug_ws")]
             println!(
                 "Signalr {} with connection token {:?} looks like dead. Disconnecting",
                 my_socket_io_connection.connection_id, my_socket_io_connection.connection_token
