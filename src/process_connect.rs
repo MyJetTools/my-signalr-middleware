@@ -10,12 +10,15 @@ pub async fn process_connect(
     negotiation_version: usize,
     web_socket: Option<Arc<MyWebSocket>>,
 ) -> (Arc<MySignalrConnection>, String) {
-    let connection_id = uuid::Uuid::new_v4().to_string();
+    let mut connection_id = uuid::Uuid::new_v4().to_string();
+    connection_id = connection_id.replace("-", "");
 
     let conenction_token = if negotiation_version == 0 {
         None
     } else {
-        Some(uuid::Uuid::new_v4().to_string())
+        let mut connection_token = uuid::Uuid::new_v4().to_string();
+        connection_token = connection_token.replace("-", "");
+        Some(connection_token)
     };
 
     let result = crate::messages::generate_negotiate_response(
