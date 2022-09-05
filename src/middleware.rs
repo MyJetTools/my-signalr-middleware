@@ -111,7 +111,7 @@ impl HttpServerMiddleware for MySignalrMiddleware {
                 let id = self.get_socket_id().await;
                 return my_http_server_web_sockets::handle_web_socket_upgrade(
                     request,
-                    &self.web_socket_callback,
+                    self.web_socket_callback.clone(),
                     id,
                     ctx.request.addr,
                 )

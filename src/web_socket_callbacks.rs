@@ -19,7 +19,7 @@ pub struct WebSocketCallbacks {
 impl WebSocketCallbacks {}
 
 #[async_trait::async_trait]
-impl my_http_server_web_sockets::MyWebSockeCallback for WebSocketCallbacks {
+impl my_http_server_web_sockets::MyWebSocketCallback for WebSocketCallbacks {
     async fn connected(&self, my_web_socket: Arc<MyWebSocket>) -> Result<(), HttpFailResult> {
         #[cfg(feature = "debug_ws")]
         println!("connected web_socket:{}", my_web_socket.id);
