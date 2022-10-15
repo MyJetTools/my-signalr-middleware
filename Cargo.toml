@@ -8,7 +8,7 @@ edition = "2021"
 [features]
 default = []
 debug-ws = []
-with-ctx = []
+
 
 [dependencies]
 my-http-server = { tag = "0.3.0", git = "https://github.com/MyJetTools/my-http-server.git" }

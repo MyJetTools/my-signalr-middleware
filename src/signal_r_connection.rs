@@ -37,9 +37,6 @@ pub struct MySignalrConnection<TCtx: Send + Sync + 'static> {
     has_web_socket: AtomicBool,
     has_greeting: AtomicBool,
     pub negotiation_version: usize,
-    #[cfg(feature = "with-ctx")]
-    pub ctx: RwLock<TCtx>,
-    #[cfg(not(feature = "with-ctx"))]
     pub ctx: TCtx,
 }
 
@@ -64,9 +61,6 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrConnection<TCtx> {
             connected: AtomicBool::new(true),
             has_web_socket: AtomicBool::new(has_web_socket),
             has_greeting: AtomicBool::new(false),
-            #[cfg(feature = "with-ctx")]
-            ctx: RwLock::new(TCtx::default()),
-            #[cfg(not(feature = "with-ctx"))]
             ctx: TCtx::default(),
         }
     }
