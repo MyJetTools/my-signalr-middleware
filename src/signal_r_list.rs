@@ -96,6 +96,15 @@ impl<TCtx: Send + Sync + Default + 'static> SignalrList<TCtx> {
         Some(result.clone())
     }
 
+    pub async fn get_all(&self) -> Vec<Arc<MySignalrConnection<TCtx>>> {
+        let read_access = self.sockets.read().await;
+        read_access
+            .sockets_by_connection_token
+            .values()
+            .map(|v| v.clone())
+            .collect()
+    }
+
     pub async fn remove(&self, connection_token: &str) -> Option<Arc<MySignalrConnection<TCtx>>> {
         let removed_signalr_connection = {
             let mut write_access = self.sockets.write().await;
