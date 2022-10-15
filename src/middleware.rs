@@ -21,6 +21,7 @@ pub struct MySignalrMiddleware<TCtx: Send + Sync + Default + 'static> {
 impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
     pub fn new(
         hub_name: &str,
+        signalr_list: Arc<SignalrList<TCtx>>,
         my_signal_r_callbacks: Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
     ) -> Self {
         let hub_name = if hub_name.starts_with('/') {
@@ -28,8 +29,6 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
         } else {
             format!("/{}", hub_name.to_lowercase())
         };
-
-        let signalr_list = Arc::new(SignalrList::new());
 
         Self {
             negotiate_path: compile_negotiate_uri(hub_name.as_str()),

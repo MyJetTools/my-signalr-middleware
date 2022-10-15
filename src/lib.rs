@@ -12,4 +12,5 @@ pub use my_signal_r_callbacks::*;
 use process_connect::process_connect;
 use process_disconnect::process_disconnect;
 pub use signal_r_connection::*;
+pub use signal_r_list::SignalrList;
 pub use web_socket_callbacks::WebSocketCallbacks;
