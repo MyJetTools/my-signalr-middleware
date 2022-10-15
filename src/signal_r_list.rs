@@ -105,6 +105,37 @@ impl<TCtx: Send + Sync + Default + 'static> SignalrList<TCtx> {
             .collect()
     }
 
+    pub async fn find_first<TFn: Fn(&MySignalrConnection<TCtx>) -> bool>(
+        &self,
+        filter: TFn,
+    ) -> Option<Arc<MySignalrConnection<TCtx>>> {
+        let read_access = self.sockets.read().await;
+
+        for connection in read_access.sockets_by_connection_token.values() {
+            if filter(connection) {
+                return Some(connection.clone());
+            }
+        }
+
+        None
+    }
+
+    pub async fn filter<TFn: Fn(&MySignalrConnection<TCtx>) -> bool>(
+        &self,
+        filter: TFn,
+    ) -> Vec<Arc<MySignalrConnection<TCtx>>> {
+        let read_access = self.sockets.read().await;
+        let mut result = Vec::with_capacity(read_access.sockets_by_connection_token.len());
+
+        for connection in read_access.sockets_by_connection_token.values() {
+            if filter(connection) {
+                result.push(connection.clone());
+            }
+        }
+
+        result
+    }
+
     pub async fn remove(&self, connection_token: &str) -> Option<Arc<MySignalrConnection<TCtx>>> {
         let removed_signalr_connection = {
             let mut write_access = self.sockets.write().await;
