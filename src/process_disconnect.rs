@@ -2,10 +2,10 @@ use std::sync::Arc;
 
 use crate::{signal_r_list::SignalrList, MySignalrCallbacks, MySignalrConnection};
 
-pub async fn process_disconnect(
-    sockets_list: &Arc<SignalrList>,
-    signalr_connection: &Arc<MySignalrConnection>,
-    connect_events: &Arc<dyn MySignalrCallbacks + Send + Sync + 'static>,
+pub async fn process_disconnect<TCtx: Send + Sync + Default + 'static>(
+    sockets_list: &Arc<SignalrList<TCtx>>,
+    signalr_connection: &Arc<MySignalrConnection<TCtx>>,
+    connect_events: &Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
 ) {
     let removed_connection = sockets_list
         .remove(signalr_connection.get_list_index())

@@ -5,16 +5,16 @@ use tokio::sync::RwLock;
 
 use crate::MySignalrConnection;
 
-struct SignalrListInner {
-    sockets_by_web_socket_id: HashMap<i64, Arc<MySignalrConnection>>,
-    sockets_by_connection_token: HashMap<String, Arc<MySignalrConnection>>,
+struct SignalrListInner<TCtx: Send + Sync + 'static> {
+    sockets_by_web_socket_id: HashMap<i64, Arc<MySignalrConnection<TCtx>>>,
+    sockets_by_connection_token: HashMap<String, Arc<MySignalrConnection<TCtx>>>,
 }
 
-pub struct SignalrList {
-    sockets: RwLock<SignalrListInner>,
+pub struct SignalrList<TCtx: Send + Sync + Default + 'static> {
+    sockets: RwLock<SignalrListInner<TCtx>>,
 }
 
-impl SignalrList {
+impl<TCtx: Send + Sync + Default + 'static> SignalrList<TCtx> {
     pub fn new() -> Self {
         Self {
             sockets: RwLock::new(SignalrListInner {
@@ -24,7 +24,7 @@ impl SignalrList {
         }
     }
 
-    pub async fn add_signalr_connection(&self, signalr_connection: Arc<MySignalrConnection>) {
+    pub async fn add_signalr_connection(&self, signalr_connection: Arc<MySignalrConnection<TCtx>>) {
         let web_socket = signalr_connection.get_web_socket().await;
         let mut write_access = self.sockets.write().await;
         write_access.sockets_by_connection_token.insert(
@@ -43,7 +43,7 @@ impl SignalrList {
         &self,
         connection_token: &str,
         web_socket: Arc<MyWebSocket>,
-    ) -> Option<Arc<MySignalrConnection>> {
+    ) -> Option<Arc<MySignalrConnection<TCtx>>> {
         let found = {
             let mut write_access = self.sockets.write().await;
 
@@ -79,7 +79,7 @@ impl SignalrList {
     pub async fn get_by_connection_token(
         &self,
         connection_token: &str,
-    ) -> Option<Arc<MySignalrConnection>> {
+    ) -> Option<Arc<MySignalrConnection<TCtx>>> {
         let read_access = self.sockets.read().await;
         let result = read_access
             .sockets_by_connection_token
@@ -90,13 +90,13 @@ impl SignalrList {
     pub async fn get_by_web_socket_id(
         &self,
         web_socket_id: i64,
-    ) -> Option<Arc<MySignalrConnection>> {
+    ) -> Option<Arc<MySignalrConnection<TCtx>>> {
         let read_access = self.sockets.read().await;
         let result = read_access.sockets_by_web_socket_id.get(&web_socket_id)?;
         Some(result.clone())
     }
 
-    pub async fn remove(&self, connection_token: &str) -> Option<Arc<MySignalrConnection>> {
+    pub async fn remove(&self, connection_token: &str) -> Option<Arc<MySignalrConnection<TCtx>>> {
         let removed_signalr_connection = {
             let mut write_access = self.sockets.write().await;
             write_access

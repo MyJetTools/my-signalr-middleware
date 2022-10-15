@@ -7,7 +7,11 @@ use rust_extensions::{
     date_time::{AtomicDateTimeAsMicroseconds, DateTimeAsMicroseconds},
     TaskCompletion,
 };
+
 use tokio::sync::Mutex;
+
+#[cfg(feature = "with-ctx")]
+use tokio::sync::RwLock;
 
 pub enum SignalRParam<'s> {
     JsonObject(&'s JsonObjectWriter),
@@ -23,7 +27,7 @@ pub struct MySignalrConnectionSingleThreaded {
     long_pooling: Option<TaskCompletion<String, String>>,
 }
 
-pub struct MySignalrConnection {
+pub struct MySignalrConnection<TCtx: Send + Sync + 'static> {
     single_threaded: Mutex<MySignalrConnectionSingleThreaded>,
     pub connection_id: String,
     pub connection_token: Option<String>,
@@ -33,9 +37,13 @@ pub struct MySignalrConnection {
     has_web_socket: AtomicBool,
     has_greeting: AtomicBool,
     pub negotiation_version: usize,
+    #[cfg(feature = "with-ctx")]
+    pub ctx: RwLock<TCtx>,
+    #[cfg(not(feature = "with-ctx"))]
+    ctx: std::marker::PhantomData<TCtx>,
 }
 
-impl MySignalrConnection {
+impl<TCtx: Send + Sync + Default + 'static> MySignalrConnection<TCtx> {
     pub fn new(
         connection_id: String,
         connection_token: Option<String>,
@@ -56,6 +64,10 @@ impl MySignalrConnection {
             connected: AtomicBool::new(true),
             has_web_socket: AtomicBool::new(has_web_socket),
             has_greeting: AtomicBool::new(false),
+            #[cfg(feature = "with-ctx")]
+            ctx: RwLock::new(TCtx::default()),
+            #[cfg(not(feature = "with-ctx"))]
+            ctx: std::marker::PhantomData,
         }
     }
 

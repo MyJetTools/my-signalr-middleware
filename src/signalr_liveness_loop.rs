@@ -4,10 +4,10 @@ use rust_extensions::date_time::DateTimeAsMicroseconds;
 
 use crate::{signal_r_list::SignalrList, MySignalrCallbacks, MySignalrConnection};
 
-pub async fn start(
-    connect_events: Arc<dyn MySignalrCallbacks + Send + Sync + 'static>,
-    sockets_list: Arc<SignalrList>,
-    my_socket_io_connection: Arc<MySignalrConnection>,
+pub async fn start<TCtx: Send + Sync + Default + 'static>(
+    connect_events: Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
+    sockets_list: Arc<SignalrList<TCtx>>,
+    my_socket_io_connection: Arc<MySignalrConnection<TCtx>>,
     ping_disconnect: Duration,
 ) {
     #[cfg(feature = "debug_ws")]

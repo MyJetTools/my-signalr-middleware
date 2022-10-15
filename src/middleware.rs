@@ -2,37 +2,37 @@ use std::sync::Arc;
 
 use hyper::Method;
 use my_http_server::{
-    HttpContext, HttpFailResult, HttpOkResult, HttpOutput, HttpServerMiddleware,
+    HttpContext, HttpFailResult, HttpOkResult, HttpOutput, HttpPath, HttpServerMiddleware,
     HttpServerRequestFlow, RequestData, WebContentType,
 };
 use tokio::sync::Mutex;
 
 use crate::{signal_r_list::SignalrList, MySignalrCallbacks, WebSocketCallbacks};
 
-pub struct MySignalrMiddleware {
+pub struct MySignalrMiddleware<TCtx: Send + Sync + Default + 'static> {
     pub hub_name: String,
-    negotiate_uri: String,
+    negotiate_path: HttpPath,
     socket_id: Mutex<i64>,
-    web_socket_callback: Arc<WebSocketCallbacks>,
-    signalr_list: Arc<SignalrList>,
-    my_signal_r_callbacks: Arc<dyn MySignalrCallbacks + Send + Sync + 'static>,
+    web_socket_callback: Arc<WebSocketCallbacks<TCtx>>,
+    signalr_list: Arc<SignalrList<TCtx>>,
+    my_signal_r_callbacks: Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
 }
 
-impl MySignalrMiddleware {
+impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
     pub fn new(
         hub_name: &str,
-        my_signal_r_callbacks: Arc<dyn MySignalrCallbacks + Send + Sync + 'static>,
+        my_signal_r_callbacks: Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
     ) -> Self {
         let hub_name = if hub_name.starts_with('/') {
-            hub_name.to_string()
+            hub_name.to_lowercase()
         } else {
-            format!("/{}", hub_name)
+            format!("/{}", hub_name.to_lowercase())
         };
 
         let signalr_list = Arc::new(SignalrList::new());
 
         Self {
-            negotiate_uri: compile_negotiate_uri(hub_name.as_str()),
+            negotiate_path: compile_negotiate_uri(hub_name.as_str()),
             signalr_list: signalr_list.clone(),
             hub_name,
             web_socket_callback: Arc::new(WebSocketCallbacks {
@@ -88,7 +88,7 @@ impl MySignalrMiddleware {
 }
 
 #[async_trait::async_trait]
-impl HttpServerMiddleware for MySignalrMiddleware {
+impl<TCtx: Send + Sync + Default + 'static> HttpServerMiddleware for MySignalrMiddleware<TCtx> {
     async fn handle_request(
         &self,
         ctx: &mut HttpContext,
@@ -96,8 +96,8 @@ impl HttpServerMiddleware for MySignalrMiddleware {
     ) -> Result<HttpOkResult, HttpFailResult> {
         if !ctx
             .request
-            .get_path_lower_case()
-            .starts_with(self.hub_name.as_str())
+            .http_path
+            .has_value_at_index_case_insensitive(0, &self.hub_name)
         {
             return get_next.next(ctx).await;
         }
@@ -122,7 +122,7 @@ impl HttpServerMiddleware for MySignalrMiddleware {
         }
 
         if ctx.request.method == Method::POST {
-            if ctx.request.get_path_lower_case() == self.negotiate_uri.as_str() {
+            if ctx.request.http_path.is_the_same_to(&self.negotiate_path) {
                 return self.handle_negotiate_request(ctx).await;
             }
         }
@@ -131,16 +131,16 @@ impl HttpServerMiddleware for MySignalrMiddleware {
     }
 }
 
-fn compile_negotiate_uri(hub_name: &str) -> String {
-    let mut result = Vec::new();
+fn compile_negotiate_uri(hub_name: &str) -> HttpPath {
+    let mut result = String::new();
 
-    result.extend_from_slice(hub_name.to_lowercase().as_bytes());
+    result.push_str(hub_name);
 
     if !hub_name.ends_with('/') {
-        result.push(b'/');
+        result.push('/');
     }
 
-    result.extend_from_slice("negotiate".as_bytes());
+    result.push_str("negotiate");
 
-    String::from_utf8(result).unwrap()
+    HttpPath::from_string(result)
 }

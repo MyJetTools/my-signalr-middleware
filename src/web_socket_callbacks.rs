@@ -11,15 +11,15 @@ use crate::{
 
 const DISCONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 
-pub struct WebSocketCallbacks {
-    pub signalr_list: Arc<SignalrList>,
-    pub my_signal_r_callbacks: Arc<dyn MySignalrCallbacks + Send + Sync + 'static>,
+pub struct WebSocketCallbacks<TCtx: Send + Sync + Default + 'static> {
+    pub signalr_list: Arc<SignalrList<TCtx>>,
+    pub my_signal_r_callbacks: Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
 }
 
-impl WebSocketCallbacks {}
-
 #[async_trait::async_trait]
-impl my_http_server_web_sockets::MyWebSocketCallback for WebSocketCallbacks {
+impl<TCtx: Send + Sync + Default + 'static> my_http_server_web_sockets::MyWebSocketCallback
+    for WebSocketCallbacks<TCtx>
+{
     async fn connected(&self, my_web_socket: Arc<MyWebSocket>) -> Result<(), HttpFailResult> {
         #[cfg(feature = "debug_ws")]
         println!("connected web_socket:{}", my_web_socket.id);
@@ -136,7 +136,10 @@ fn get_payload_type(payload: &str) -> &str {
     panic!("Packet type is not found")
 }
 
-async fn read_first_payload(signalr_connection: &Arc<MySignalrConnection>, payload: &str) {
+async fn read_first_payload<TCtx: Send + Sync + Default + 'static>(
+    signalr_connection: &Arc<MySignalrConnection<TCtx>>,
+    payload: &str,
+) {
     let json_reader = JsonFirstLineReader::new(payload.as_bytes());
 
     let mut protocol = false;

@@ -4,12 +4,12 @@ use my_http_server_web_sockets::MyWebSocket;
 
 use crate::{signal_r_list::SignalrList, MySignalrCallbacks, MySignalrConnection};
 
-pub async fn process_connect(
-    connections_callback: &Arc<dyn MySignalrCallbacks + Send + Sync + 'static>,
-    signalr_list: &Arc<SignalrList>,
+pub async fn process_connect<TCtx: Send + Sync + Default + 'static>(
+    connections_callback: &Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
+    signalr_list: &Arc<SignalrList<TCtx>>,
     negotiation_version: usize,
     web_socket: Option<Arc<MyWebSocket>>,
-) -> (Arc<MySignalrConnection>, String) {
+) -> (Arc<MySignalrConnection<TCtx>>, String) {
     let mut connection_id = uuid::Uuid::new_v4().to_string();
     connection_id = connection_id.replace("-", "");
 
