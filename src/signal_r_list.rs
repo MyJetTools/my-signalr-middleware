@@ -1,6 +1,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use my_http_server_web_sockets::MyWebSocket;
+use rust_extensions::lazy::LazyVec;
 use tokio::sync::RwLock;
 
 use crate::MySignalrConnection;
@@ -123,17 +124,17 @@ impl<TCtx: Send + Sync + Default + 'static> SignalrList<TCtx> {
     pub async fn filter<TFn: Fn(&MySignalrConnection<TCtx>) -> bool>(
         &self,
         filter: TFn,
-    ) -> Vec<Arc<MySignalrConnection<TCtx>>> {
+    ) -> Option<Vec<Arc<MySignalrConnection<TCtx>>>> {
         let read_access = self.sockets.read().await;
-        let mut result = Vec::with_capacity(read_access.sockets_by_connection_token.len());
+        let mut result = LazyVec::new();
 
         for connection in read_access.sockets_by_connection_token.values() {
             if filter(connection) {
-                result.push(connection.clone());
+                result.add(connection.clone());
             }
         }
 
-        result
+        result.result
     }
 
     pub async fn remove(&self, connection_token: &str) -> Option<Arc<MySignalrConnection<TCtx>>> {
