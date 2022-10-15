@@ -40,7 +40,7 @@ pub struct MySignalrConnection<TCtx: Send + Sync + 'static> {
     #[cfg(feature = "with-ctx")]
     pub ctx: RwLock<TCtx>,
     #[cfg(not(feature = "with-ctx"))]
-    ctx: std::marker::PhantomData<TCtx>,
+    pub ctx: TCtx,
 }
 
 impl<TCtx: Send + Sync + Default + 'static> MySignalrConnection<TCtx> {
@@ -67,7 +67,7 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrConnection<TCtx> {
             #[cfg(feature = "with-ctx")]
             ctx: RwLock::new(TCtx::default()),
             #[cfg(not(feature = "with-ctx"))]
-            ctx: std::marker::PhantomData,
+            ctx: TCtx::default(),
         }
     }
 
