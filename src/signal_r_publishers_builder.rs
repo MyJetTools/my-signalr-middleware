@@ -7,6 +7,9 @@ pub struct SignalRPublshersBuilder<TCtx: Send + Sync + Default + 'static> {
 }
 
 impl<TCtx: Send + Sync + Default + 'static> SignalRPublshersBuilder<TCtx> {
+    pub fn new(signalr_list: Arc<SignalrList<TCtx>>) -> Self {
+        Self { signalr_list }
+    }
     pub fn get_publisher<TContract: SignalrContractSerializer + Send + Sync + 'static>(
         &mut self,
         action_name: String,
