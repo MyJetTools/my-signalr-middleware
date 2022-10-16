@@ -36,11 +36,7 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
         signalr_list: Arc<SignalrConnectionsList<TCtx>>,
         actions: MySignalrActions<TCtx>,
     ) -> Self {
-        let hub_name = if hub_name.starts_with('/') {
-            hub_name.to_lowercase()
-        } else {
-            format!("/{}", hub_name.to_lowercase())
-        };
+        let hub_name = hub_name.to_lowercase();
 
         let actions = Arc::new(actions);
 
@@ -142,6 +138,10 @@ impl<TCtx: Send + Sync + Default + 'static> HttpServerMiddleware for MySignalrMi
 fn compile_negotiate_uri(hub_name: &str) -> HttpPath {
     let mut result = String::new();
 
+    if !hub_name.starts_with('/') {
+        result.push('/');
+    }
+
     result.push_str(hub_name);
 
     if !hub_name.ends_with('/') {
@@ -151,4 +151,17 @@ fn compile_negotiate_uri(hub_name: &str) -> HttpPath {
     result.push_str("negotiate");
 
     HttpPath::from_string(result)
+}
+
+#[cfg(test)]
+mod tests {
+
+    #[test]
+    fn test_negotiate_compilation() {
+        let name = "/signalr";
+
+        let result = super::compile_negotiate_uri(name);
+
+        assert!(result.has_values_at_index_case_insensitive(0, &["signalr", "negotiate"]));
+    }
 }
