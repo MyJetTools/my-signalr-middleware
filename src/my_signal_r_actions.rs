@@ -21,16 +21,18 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrActions<TCtx> {
         }
     }
 
-    pub fn add_action(
+    pub fn add_action<
+        TMySignalrPayloadCallbacks: MySignalrPayloadCallbacks<TCtx = TCtx> + Send + Sync + 'static,
+    >(
         &mut self,
         action: String,
-        callback: Arc<dyn MySignalrPayloadCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
+        callback: TMySignalrPayloadCallbacks,
     ) {
         if self.actions.contains_key(&action) {
             panic!("Signalr action already registered: {}", action);
         }
 
-        self.actions.insert(action, callback);
+        self.actions.insert(action, Arc::new(callback));
     }
 }
 

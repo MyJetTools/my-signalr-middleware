@@ -34,10 +34,13 @@ impl<TCtx: Send + Sync + Default + 'static> MiddlewareBuilder<TCtx> {
         self
     }
 
-    pub fn with_action<TContract: SignalrContractSerializer + Send + Sync + 'static>(
+    pub fn with_action<
+        TContract: SignalrContractSerializer + Send + Sync + 'static,
+        TMySignalrPayloadCallbacks: MySignalrPayloadCallbacks<TCtx = TCtx> + Send + Sync + 'static,
+    >(
         mut self,
         action_name: String,
-        action: Arc<dyn MySignalrPayloadCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
+        action: TMySignalrPayloadCallbacks,
     ) -> Self {
         self.actions.add_action(action_name, action);
         self
