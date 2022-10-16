@@ -4,10 +4,6 @@ use rust_extensions::Logger;
 
 use crate::{MySignalrConnection, MySignalrPayloadCallbacks};
 
-pub trait SignalrContractSerializer {
-    fn serialize(&self) -> Vec<Vec<u8>>;
-}
-
 pub trait SignalrContractDeserializer {
     type Item;
     fn deserialize(data: &[&[u8]]) -> Result<Self::Item, String>;

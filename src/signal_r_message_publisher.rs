@@ -1,7 +1,10 @@
 use std::sync::Arc;
 
-use crate::{MySignalrConnection, SignalRParam, SignalrContractSerializer, SignalrList};
+use crate::{MySignalrConnection, SignalRParam, SignalrList};
 
+pub trait SignalrContractSerializer {
+    fn serialize(self) -> Vec<Vec<u8>>;
+}
 pub struct SignalrMessagePublisher<
     TContract: SignalrContractSerializer + Send + Sync + 'static,
     TCtx: Default + Send + Sync + 'static,
