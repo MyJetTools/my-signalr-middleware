@@ -1,9 +1,11 @@
 use std::{collections::HashMap, sync::Arc};
 
 use my_http_server::HttpFailResult;
+use rust_extensions::Logger;
 
 use crate::{
-    MySignalrCallbacks, MySignalrConnection, MySignalrPayloadCallbacks, MySignalrTransportCallbacks,
+    MySignalrActionCallbacks, MySignalrCallbacks, MySignalrCallbacksInstance, MySignalrConnection,
+    MySignalrPayloadCallbacks, MySignalrTransportCallbacks, SignalrContractDeserializer,
 };
 
 pub struct MySignalrActions<TCtx: Send + Sync + Default + 'static> {
@@ -22,17 +24,25 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrActions<TCtx> {
     }
 
     pub fn add_action<
-        TMySignalrPayloadCallbacks: MySignalrPayloadCallbacks<TCtx = TCtx> + Send + Sync + 'static,
+        TContract: SignalrContractDeserializer<Item = TContract> + Send + Sync + 'static,
+        TMySignalrPayloadCallbacks: MySignalrActionCallbacks<TContract, TCtx = TCtx> + Send + Sync + 'static,
     >(
         &mut self,
         action: String,
         callback: TMySignalrPayloadCallbacks,
+        logger: Arc<dyn Logger + Send + Sync + 'static>,
     ) {
         if self.actions.contains_key(&action) {
             panic!("Signalr action already registered: {}", action);
         }
 
-        self.actions.insert(action, Arc::new(callback));
+        let instance = MySignalrCallbacksInstance {
+            action_name: action.to_string(),
+            callback: Arc::new(callback),
+            logger,
+        };
+
+        self.actions.insert(action, Arc::new(instance));
     }
 }
 

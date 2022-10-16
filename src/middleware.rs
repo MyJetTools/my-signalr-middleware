@@ -5,6 +5,7 @@ use my_http_server::{
     HttpContext, HttpFailResult, HttpOkResult, HttpOutput, HttpPath, HttpServerMiddleware,
     HttpServerRequestFlow, RequestData, WebContentType,
 };
+use rust_extensions::Logger;
 use tokio::sync::Mutex;
 
 use crate::{
@@ -25,8 +26,9 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
     pub fn new_with_builder(
         hub_name: &str,
         signalr_list: Arc<SignalrList<TCtx>>,
+        logger: Arc<dyn Logger + Send + Sync + 'static>,
     ) -> MiddlewareBuilder<TCtx> {
-        MiddlewareBuilder::new(hub_name.to_string(), signalr_list)
+        MiddlewareBuilder::new(hub_name.to_string(), signalr_list, logger)
     }
 
     pub fn new(
