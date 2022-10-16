@@ -10,7 +10,7 @@ use tokio::sync::Mutex;
 
 use crate::{
     my_signal_r_actions::MySignalrActions, signal_r_list::SignalrList, MiddlewareBuilder,
-    SignalrContractSerializer, SignalrMessagePublisher, WebSocketCallbacks,
+    WebSocketCallbacks,
 };
 
 pub struct MySignalrMiddleware<TCtx: Send + Sync + Default + 'static> {
@@ -55,13 +55,6 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
             socket_id: Mutex::new(0),
             actions,
         }
-    }
-
-    pub fn get_publisher<TContract: SignalrContractSerializer + Send + Sync + 'static>(
-        &mut self,
-        action_name: String,
-    ) -> SignalrMessagePublisher<TContract, TCtx> {
-        return SignalrMessagePublisher::new(action_name, self.signalr_list.clone());
     }
 
     async fn get_socket_id(&self) -> i64 {
