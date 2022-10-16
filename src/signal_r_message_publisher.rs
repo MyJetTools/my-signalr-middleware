@@ -1,0 +1,78 @@
+use std::sync::Arc;
+
+use crate::{MySignalrConnection, SignalRParam, SignalrContractSerializer, SignalrList};
+
+pub struct SignalrMessagePublisher<
+    TContract: SignalrContractSerializer<Item = TContract> + Send + Sync + 'static,
+    TCtx: Default + Send + Sync + 'static,
+> {
+    signalr_list: Arc<SignalrList<TCtx>>,
+    itm: std::marker::PhantomData<TContract>,
+    action_name: String,
+}
+
+impl<
+        TContract: SignalrContractSerializer<Item = TContract> + Send + Sync + 'static,
+        TCtx: Default + Send + Sync + 'static,
+    > SignalrMessagePublisher<TContract, TCtx>
+{
+    pub fn new(action_name: String, signalr_list: Arc<SignalrList<TCtx>>) -> Self {
+        Self {
+            action_name,
+            signalr_list,
+            itm: std::marker::PhantomData,
+        }
+    }
+
+    pub async fn broadcast_to_all(&self, contract: TContract) {
+        if let Some(connections) = self.signalr_list.get_all().await {
+            let payload = contract.serialize();
+
+            for connection in connections {
+                let param = SignalRParam::String(payload.as_str());
+                connection.send(self.action_name.as_str(), param).await;
+            }
+        }
+    }
+
+    pub async fn send_to_connection(
+        &self,
+        connection: Arc<MySignalrConnection<TCtx>>,
+        contract: TContract,
+    ) {
+        let payload = contract.serialize();
+        let param = SignalRParam::String(payload.as_str());
+        connection.send(self.action_name.as_str(), param).await;
+    }
+
+    pub async fn send_to_tagged_connections(&self, key: &str, contract: TContract) {
+        if let Some(connections) = self.signalr_list.get_tagged_connections(key).await {
+            let payload = contract.serialize();
+
+            for connection in connections {
+                let param = SignalRParam::String(payload.as_str());
+                connection.send(self.action_name.as_str(), param).await;
+            }
+        }
+    }
+
+    pub async fn send_to_tagged_connections_with_value(
+        &self,
+        key: &str,
+        value: &str,
+        contract: TContract,
+    ) {
+        if let Some(connections) = self
+            .signalr_list
+            .get_tagged_connections_with_value(key, value)
+            .await
+        {
+            let payload = contract.serialize();
+
+            for connection in connections {
+                let param = SignalRParam::String(payload.as_str());
+                connection.send(self.action_name.as_str(), param).await;
+            }
+        }
+    }
+}

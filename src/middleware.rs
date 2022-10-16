@@ -7,7 +7,10 @@ use my_http_server::{
 };
 use tokio::sync::Mutex;
 
-use crate::{signal_r_list::SignalrList, MySignalrCallbacks, WebSocketCallbacks};
+use crate::{
+    my_signal_r_actions::MySignalrActions, signal_r_list::SignalrList, SignalrContractSerializer,
+    SignalrMessagePublisher, WebSocketCallbacks,
+};
 
 pub struct MySignalrMiddleware<TCtx: Send + Sync + Default + 'static> {
     pub hub_name: String,
@@ -15,14 +18,14 @@ pub struct MySignalrMiddleware<TCtx: Send + Sync + Default + 'static> {
     socket_id: Mutex<i64>,
     web_socket_callback: Arc<WebSocketCallbacks<TCtx>>,
     signalr_list: Arc<SignalrList<TCtx>>,
-    my_signal_r_callbacks: Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
+    actions: Arc<MySignalrActions<TCtx>>,
 }
 
 impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
     pub fn new(
         hub_name: &str,
         signalr_list: Arc<SignalrList<TCtx>>,
-        my_signal_r_callbacks: Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
+        actions: MySignalrActions<TCtx>,
     ) -> Self {
         let hub_name = if hub_name.starts_with('/') {
             hub_name.to_lowercase()
@@ -30,18 +33,28 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
             format!("/{}", hub_name.to_lowercase())
         };
 
+        let actions = Arc::new(actions);
+
         Self {
             negotiate_path: compile_negotiate_uri(hub_name.as_str()),
             signalr_list: signalr_list.clone(),
             hub_name,
             web_socket_callback: Arc::new(WebSocketCallbacks {
                 signalr_list,
-                my_signal_r_callbacks: my_signal_r_callbacks.clone(),
+                my_signal_r_callbacks: actions.clone(),
             }),
             socket_id: Mutex::new(0),
-
-            my_signal_r_callbacks,
+            actions,
         }
+    }
+
+    pub fn get_publisher<
+        TContract: SignalrContractSerializer<Item = TContract> + Send + Sync + 'static,
+    >(
+        &mut self,
+        action_name: String,
+    ) -> SignalrMessagePublisher<TContract, TCtx> {
+        return SignalrMessagePublisher::new(action_name, self.signalr_list.clone());
     }
 
     async fn get_socket_id(&self) -> i64 {
@@ -69,13 +82,9 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
             Err(_) => 0,
         };
 
-        let (_, response) = crate::process_connect(
-            &self.my_signal_r_callbacks,
-            &self.signalr_list,
-            negotiation_version,
-            None,
-        )
-        .await;
+        let (_, response) =
+            crate::process_connect(&self.actions, &self.signalr_list, negotiation_version, None)
+                .await;
         HttpOutput::Content {
             headers: None,
             content_type: Some(WebContentType::Text),

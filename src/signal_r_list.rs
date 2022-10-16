@@ -99,13 +99,20 @@ impl<TCtx: Send + Sync + Default + 'static> SignalrList<TCtx> {
         Some(result.clone())
     }
 
-    pub async fn get_all(&self) -> Vec<Arc<MySignalrConnection<TCtx>>> {
+    pub async fn get_all(&self) -> Option<Vec<Arc<MySignalrConnection<TCtx>>>> {
         let read_access = self.sockets.read().await;
-        read_access
+
+        if read_access.sockets_by_connection_token.is_empty() {
+            return None;
+        }
+
+        let result = read_access
             .sockets_by_connection_token
             .values()
             .map(|v| v.clone())
-            .collect()
+            .collect();
+
+        Some(result)
     }
 
     pub async fn find_first<TFn: Fn(&MySignalrConnection<TCtx>) -> bool>(
@@ -200,14 +207,38 @@ impl<TCtx: Send + Sync + Default + 'static> SignalrList<TCtx> {
         }
     }
 
-    pub async fn get_tagged_connections(
+    pub async fn get_tagged_connections_with_value(
         &self,
         key: &str,
         value: &str,
     ) -> Option<Vec<Arc<MySignalrConnection<TCtx>>>> {
         let read_access = self.sockets.read().await;
 
-        if let Some(id_s) = read_access.tags.get_tagged_connections(key, value) {
+        if let Some(id_s) = read_access
+            .tags
+            .get_tagged_connections_with_value(key, value)
+        {
+            let mut result = Vec::with_capacity(id_s.len());
+
+            for id in &id_s {
+                if let Some(connection) = read_access.sockets_by_connection_token.get(id) {
+                    result.push(connection.clone());
+                }
+            }
+
+            return Some(result);
+        }
+
+        None
+    }
+
+    pub async fn get_tagged_connections(
+        &self,
+        key: &str,
+    ) -> Option<Vec<Arc<MySignalrConnection<TCtx>>>> {
+        let read_access = self.sockets.read().await;
+
+        if let Some(id_s) = read_access.tags.get_tagged_connections(key) {
             let mut result = Vec::with_capacity(id_s.len());
 
             for id in &id_s {

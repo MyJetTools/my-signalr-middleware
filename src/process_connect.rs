@@ -4,8 +4,11 @@ use my_http_server_web_sockets::MyWebSocket;
 
 use crate::{signal_r_list::SignalrList, MySignalrCallbacks, MySignalrConnection};
 
-pub async fn process_connect<TCtx: Send + Sync + Default + 'static>(
-    connections_callback: &Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
+pub async fn process_connect<
+    TCtx: Send + Sync + Default + 'static,
+    TMySignalrCallbacks: MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static,
+>(
+    connections_callback: &Arc<TMySignalrCallbacks>,
     signalr_list: &Arc<SignalrList<TCtx>>,
     negotiation_version: usize,
     web_socket: Option<Arc<MyWebSocket>>,
