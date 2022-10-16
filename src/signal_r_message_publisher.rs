@@ -29,8 +29,9 @@ impl<
             let payload = contract.serialize();
 
             for connection in connections {
-                let param = SignalRParam::String(payload.as_str());
-                connection.send(self.action_name.as_str(), param).await;
+                let params = SignalRParam::Raw(payload.as_slice());
+
+                connection.send(self.action_name.as_str(), &params).await;
             }
         }
     }
@@ -41,8 +42,8 @@ impl<
         contract: TContract,
     ) {
         let payload = contract.serialize();
-        let param = SignalRParam::String(payload.as_str());
-        connection.send(self.action_name.as_str(), param).await;
+        let params = SignalRParam::Raw(payload.as_slice());
+        connection.send(self.action_name.as_str(), &params).await;
     }
 
     pub async fn send_to_tagged_connections(&self, key: &str, contract: TContract) {
@@ -50,8 +51,8 @@ impl<
             let payload = contract.serialize();
 
             for connection in connections {
-                let param = SignalRParam::String(payload.as_str());
-                connection.send(self.action_name.as_str(), param).await;
+                let params = SignalRParam::Raw(payload.as_slice());
+                connection.send(self.action_name.as_str(), &params).await;
             }
         }
     }
@@ -70,8 +71,8 @@ impl<
             let payload = contract.serialize();
 
             for connection in connections {
-                let param = SignalRParam::String(payload.as_str());
-                connection.send(self.action_name.as_str(), param).await;
+                let params = SignalRParam::Raw(payload.as_slice());
+                connection.send(self.action_name.as_str(), &params).await;
             }
         }
     }

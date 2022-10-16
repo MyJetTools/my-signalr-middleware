@@ -6,8 +6,8 @@ use crate::{MySignalrConnection, MySignalrPayloadCallbacks};
 
 pub trait SignalrContractSerializer {
     type Item;
-    fn serialize(&self) -> String;
-    fn deserialize(data: &[u8]) -> Result<Self::Item, String>;
+    fn serialize(&self) -> Vec<Vec<u8>>;
+    fn deserialize(data: &[&[u8]]) -> Result<Self::Item, String>;
 }
 
 #[async_trait::async_trait]
@@ -48,7 +48,27 @@ impl<
         action_name: &str,
         data: &[u8],
     ) {
-        match TContract::deserialize(data) {
+        let mut params = Vec::new();
+        for item in my_json::json_reader::array_parser::JsonArrayIterator::new(data) {
+            match item {
+                Ok(itm) => params.push(itm),
+                Err(err) => {
+                    let mut ctx = HashMap::new();
+                    ctx.insert("action".to_string(), action_name.to_string());
+                    ctx.insert(
+                        "payload".to_string(),
+                        String::from_utf8_lossy(data).to_string(),
+                    );
+                    self.logger.write_fatal_error(
+                        "Signalr payload handler".to_string(),
+                        format!("Can read parameters payloads. Err: {:?}", err),
+                        Some(ctx),
+                    )
+                }
+            }
+        }
+
+        match TContract::deserialize(&params) {
             Ok(contract) => {
                 self.callback.on(connection, headers, contract).await;
             }

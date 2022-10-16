@@ -19,6 +19,7 @@ pub enum SignalRParam<'s> {
     Number(i64),
     Float(f64),
     Boolean(bool),
+    Raw(&'s [Vec<u8>]),
     None,
 }
 
@@ -110,7 +111,7 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrConnection<TCtx> {
         self.last_incoming_moment.as_date_time()
     }
 
-    pub async fn send<'s>(&self, action_name: &str, parameter: SignalRParam<'s>) {
+    pub async fn send<'s>(&self, action_name: &str, parameter: &SignalRParam<'s>) {
         let web_socket = {
             let read_access = self.single_threaded.lock().await;
             read_access.web_socket.clone()
@@ -139,10 +140,18 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrConnection<TCtx> {
                     result.extend_from_slice(value.to_string().as_bytes());
                 }
                 SignalRParam::Boolean(value) => {
-                    if value {
+                    if *value {
                         result.extend_from_slice("true".as_bytes());
                     } else {
                         result.extend_from_slice("false".as_bytes());
+                    }
+                }
+                SignalRParam::Raw(value) => {
+                    for (index, item) in value.iter().enumerate() {
+                        if index > 0 {
+                            result.push(b',');
+                        }
+                        result.extend_from_slice(item.as_slice());
                     }
                 }
                 SignalRParam::None => {}
