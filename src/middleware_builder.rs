@@ -20,9 +20,7 @@ impl<TCtx: Send + Sync + Default + 'static> MiddlewareBuilder<TCtx> {
         }
     }
 
-    pub fn with_transport_callback<
-        TContract: SignalrContractSerializer<Item = TContract> + Send + Sync + 'static,
-    >(
+    pub fn with_transport_callback(
         mut self,
         transport_callback: Arc<
             dyn MySignalrTransportCallbacks<TCtx = TCtx> + Send + Sync + 'static,
@@ -36,9 +34,7 @@ impl<TCtx: Send + Sync + Default + 'static> MiddlewareBuilder<TCtx> {
         self
     }
 
-    pub fn with_action<
-        TContract: SignalrContractSerializer<Item = TContract> + Send + Sync + 'static,
-    >(
+    pub fn with_action<TContract: SignalrContractSerializer + Send + Sync + 'static>(
         mut self,
         action_name: String,
         action: Arc<dyn MySignalrPayloadCallbacks<TCtx = TCtx> + Send + Sync + 'static>,

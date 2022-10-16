@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{MySignalrConnection, SignalRParam, SignalrContractSerializer, SignalrList};
 
 pub struct SignalrMessagePublisher<
-    TContract: SignalrContractSerializer<Item = TContract> + Send + Sync + 'static,
+    TContract: SignalrContractSerializer + Send + Sync + 'static,
     TCtx: Default + Send + Sync + 'static,
 > {
     signalr_list: Arc<SignalrList<TCtx>>,
@@ -12,7 +12,7 @@ pub struct SignalrMessagePublisher<
 }
 
 impl<
-        TContract: SignalrContractSerializer<Item = TContract> + Send + Sync + 'static,
+        TContract: SignalrContractSerializer + Send + Sync + 'static,
         TCtx: Default + Send + Sync + 'static,
     > SignalrMessagePublisher<TContract, TCtx>
 {

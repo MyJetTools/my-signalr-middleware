@@ -5,14 +5,17 @@ use rust_extensions::Logger;
 use crate::{MySignalrConnection, MySignalrPayloadCallbacks};
 
 pub trait SignalrContractSerializer {
-    type Item;
     fn serialize(&self) -> Vec<Vec<u8>>;
+}
+
+pub trait SignalrContractDeserializer {
+    type Item;
     fn deserialize(data: &[&[u8]]) -> Result<Self::Item, String>;
 }
 
 #[async_trait::async_trait]
 pub trait MySignalrActionCallbacks<
-    TContract: SignalrContractSerializer<Item = TContract> + Send + Sync + 'static,
+    TContract: SignalrContractDeserializer<Item = TContract> + Send + Sync + 'static,
 >
 {
     type TCtx: Send + Sync + Default + 'static;
@@ -25,7 +28,7 @@ pub trait MySignalrActionCallbacks<
 }
 
 pub struct MySignalrCallbacksInstance<
-    TContract: SignalrContractSerializer<Item = TContract> + Send + Sync + 'static,
+    TContract: SignalrContractDeserializer<Item = TContract> + Send + Sync + 'static,
     TCtx: Send + Sync + Default + 'static,
 > {
     pub action_name: String,
@@ -35,7 +38,7 @@ pub struct MySignalrCallbacksInstance<
 
 #[async_trait::async_trait]
 impl<
-        TContract: SignalrContractSerializer<Item = TContract> + Send + Sync + 'static,
+        TContract: SignalrContractDeserializer<Item = TContract> + Send + Sync + 'static,
         TCtx: Send + Sync + Default + 'static,
     > MySignalrPayloadCallbacks for MySignalrCallbacksInstance<TContract, TCtx>
 {

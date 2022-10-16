@@ -48,9 +48,7 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
         }
     }
 
-    pub fn get_publisher<
-        TContract: SignalrContractSerializer<Item = TContract> + Send + Sync + 'static,
-    >(
+    pub fn get_publisher<TContract: SignalrContractSerializer + Send + Sync + 'static>(
         &mut self,
         action_name: String,
     ) -> SignalrMessagePublisher<TContract, TCtx> {
