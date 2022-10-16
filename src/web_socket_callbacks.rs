@@ -6,13 +6,13 @@ use my_http_server_web_sockets::{MyWebSocket, WebSocketMessage};
 use my_json::json_reader::JsonFirstLineReader;
 
 use crate::{
-    messages::SignalrMessage, signal_r_list::SignalrList, MySignalrCallbacks, MySignalrConnection,
+    messages::SignalrMessage, MySignalrCallbacks, MySignalrConnection, SignalrConnectionsList,
 };
 
 const DISCONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub struct WebSocketCallbacks<TCtx: Send + Sync + Default + 'static> {
-    pub signalr_list: Arc<SignalrList<TCtx>>,
+    pub signalr_list: Arc<SignalrConnectionsList<TCtx>>,
     pub my_signal_r_callbacks: Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
 }
 

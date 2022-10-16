@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use crate::{signal_r_list::SignalrList, MySignalrCallbacks, MySignalrConnection};
+use crate::{MySignalrCallbacks, MySignalrConnection, SignalrConnectionsList};
 
 pub async fn process_disconnect<TCtx: Send + Sync + Default + 'static>(
-    sockets_list: &Arc<SignalrList<TCtx>>,
+    sockets_list: &Arc<SignalrConnectionsList<TCtx>>,
     signalr_connection: &Arc<MySignalrConnection<TCtx>>,
     connect_events: &Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
 ) {

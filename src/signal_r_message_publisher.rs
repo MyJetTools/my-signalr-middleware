@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{MySignalrConnection, SignalRParam, SignalrList};
+use crate::{MySignalrConnection, SignalRParam, SignalrConnectionsList};
 
 pub trait SignalrContractSerializer {
     fn serialize(self) -> Vec<Vec<u8>>;
@@ -9,7 +9,7 @@ pub struct SignalrMessagePublisher<
     TContract: SignalrContractSerializer + Send + Sync + 'static,
     TCtx: Default + Send + Sync + 'static,
 > {
-    signalr_list: Arc<SignalrList<TCtx>>,
+    signalr_list: Arc<SignalrConnectionsList<TCtx>>,
     itm: std::marker::PhantomData<TContract>,
     action_name: String,
 }
@@ -19,7 +19,7 @@ impl<
         TCtx: Default + Send + Sync + 'static,
     > SignalrMessagePublisher<TContract, TCtx>
 {
-    pub fn new(action_name: String, signalr_list: Arc<SignalrList<TCtx>>) -> Self {
+    pub fn new(action_name: String, signalr_list: Arc<SignalrConnectionsList<TCtx>>) -> Self {
         Self {
             action_name,
             signalr_list,

@@ -9,7 +9,7 @@ use rust_extensions::Logger;
 use tokio::sync::Mutex;
 
 use crate::{
-    my_signal_r_actions::MySignalrActions, signal_r_list::SignalrList, MiddlewareBuilder,
+    my_signal_r_actions::MySignalrActions, MiddlewareBuilder, SignalrConnectionsList,
     WebSocketCallbacks,
 };
 
@@ -18,14 +18,14 @@ pub struct MySignalrMiddleware<TCtx: Send + Sync + Default + 'static> {
     negotiate_path: HttpPath,
     socket_id: Mutex<i64>,
     web_socket_callback: Arc<WebSocketCallbacks<TCtx>>,
-    signalr_list: Arc<SignalrList<TCtx>>,
+    signalr_list: Arc<SignalrConnectionsList<TCtx>>,
     actions: Arc<MySignalrActions<TCtx>>,
 }
 
 impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
     pub fn new_with_builder(
         hub_name: &str,
-        signalr_list: Arc<SignalrList<TCtx>>,
+        signalr_list: Arc<SignalrConnectionsList<TCtx>>,
         logger: Arc<dyn Logger + Send + Sync + 'static>,
     ) -> MiddlewareBuilder<TCtx> {
         MiddlewareBuilder::new(hub_name.to_string(), signalr_list, logger)
@@ -33,7 +33,7 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
 
     pub fn new(
         hub_name: &str,
-        signalr_list: Arc<SignalrList<TCtx>>,
+        signalr_list: Arc<SignalrConnectionsList<TCtx>>,
         actions: MySignalrActions<TCtx>,
     ) -> Self {
         let hub_name = if hub_name.starts_with('/') {

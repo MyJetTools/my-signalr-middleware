@@ -2,14 +2,14 @@ use std::sync::Arc;
 
 use my_http_server_web_sockets::MyWebSocket;
 
-use crate::{signal_r_list::SignalrList, MySignalrCallbacks, MySignalrConnection};
+use crate::{MySignalrCallbacks, MySignalrConnection, SignalrConnectionsList};
 
 pub async fn process_connect<
     TCtx: Send + Sync + Default + 'static,
     TMySignalrCallbacks: MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static,
 >(
     connections_callback: &Arc<TMySignalrCallbacks>,
-    signalr_list: &Arc<SignalrList<TCtx>>,
+    signalr_list: &Arc<SignalrConnectionsList<TCtx>>,
     negotiation_version: usize,
     web_socket: Option<Arc<MyWebSocket>>,
 ) -> (Arc<MySignalrConnection<TCtx>>, String) {

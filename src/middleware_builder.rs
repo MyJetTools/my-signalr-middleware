@@ -4,12 +4,12 @@ use rust_extensions::Logger;
 
 use crate::{
     my_signal_r_actions::MySignalrActions, MySignalrActionCallbacks, MySignalrMiddleware,
-    MySignalrTransportCallbacks, SignalrContractDeserializer, SignalrList,
+    MySignalrTransportCallbacks, SignalrConnectionsList, SignalrContractDeserializer,
 };
 
 pub struct MiddlewareBuilder<TCtx: Send + Sync + Default + 'static> {
     hub_name: String,
-    signalr_list: Arc<SignalrList<TCtx>>,
+    signalr_list: Arc<SignalrConnectionsList<TCtx>>,
     actions: MySignalrActions<TCtx>,
     logger: Arc<dyn Logger + Send + Sync + 'static>,
 }
@@ -17,7 +17,7 @@ pub struct MiddlewareBuilder<TCtx: Send + Sync + Default + 'static> {
 impl<TCtx: Send + Sync + Default + 'static> MiddlewareBuilder<TCtx> {
     pub fn new(
         hub_name: String,
-        signalr_list: Arc<SignalrList<TCtx>>,
+        signalr_list: Arc<SignalrConnectionsList<TCtx>>,
         logger: Arc<dyn Logger + Send + Sync + 'static>,
     ) -> Self {
         Self {

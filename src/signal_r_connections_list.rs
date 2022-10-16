@@ -12,11 +12,11 @@ struct SignalrListInner<TCtx: Send + Sync + 'static> {
     tags: crate::Tags,
 }
 
-pub struct SignalrList<TCtx: Send + Sync + Default + 'static> {
+pub struct SignalrConnectionsList<TCtx: Send + Sync + Default + 'static> {
     sockets: RwLock<SignalrListInner<TCtx>>,
 }
 
-impl<TCtx: Send + Sync + Default + 'static> SignalrList<TCtx> {
+impl<TCtx: Send + Sync + Default + 'static> SignalrConnectionsList<TCtx> {
     pub fn new() -> Self {
         Self {
             sockets: RwLock::new(SignalrListInner {
@@ -175,7 +175,7 @@ impl<TCtx: Send + Sync + Default + 'static> SignalrList<TCtx> {
 
     pub async fn add_tag_to_connection(
         &self,
-        ctx: Arc<MySignalrConnection<TCtx>>,
+        ctx: &MySignalrConnection<TCtx>,
         key: &str,
         value: &str,
     ) {

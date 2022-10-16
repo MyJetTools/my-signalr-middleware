@@ -1,13 +1,13 @@
 use std::sync::Arc;
 
-use crate::{SignalrContractSerializer, SignalrList, SignalrMessagePublisher};
+use crate::{SignalrConnectionsList, SignalrContractSerializer, SignalrMessagePublisher};
 
 pub struct SignalRPublshersBuilder<TCtx: Send + Sync + Default + 'static> {
-    signalr_list: Arc<SignalrList<TCtx>>,
+    signalr_list: Arc<SignalrConnectionsList<TCtx>>,
 }
 
 impl<TCtx: Send + Sync + Default + 'static> SignalRPublshersBuilder<TCtx> {
-    pub fn new(signalr_list: Arc<SignalrList<TCtx>>) -> Self {
+    pub fn new(signalr_list: Arc<SignalrConnectionsList<TCtx>>) -> Self {
         Self { signalr_list }
     }
     pub fn get_publisher<TContract: SignalrContractSerializer + Send + Sync + 'static>(

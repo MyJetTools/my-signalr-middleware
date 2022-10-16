@@ -2,11 +2,11 @@ use std::{sync::Arc, time::Duration};
 
 use rust_extensions::date_time::DateTimeAsMicroseconds;
 
-use crate::{signal_r_list::SignalrList, MySignalrCallbacks, MySignalrConnection};
+use crate::{MySignalrCallbacks, MySignalrConnection, SignalrConnectionsList};
 
 pub async fn start<TCtx: Send + Sync + Default + 'static>(
     connect_events: Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
-    sockets_list: Arc<SignalrList<TCtx>>,
+    sockets_list: Arc<SignalrConnectionsList<TCtx>>,
     my_socket_io_connection: Arc<MySignalrConnection<TCtx>>,
     ping_disconnect: Duration,
 ) {
