@@ -8,8 +8,8 @@ use my_http_server::{
 use tokio::sync::Mutex;
 
 use crate::{
-    my_signal_r_actions::MySignalrActions, signal_r_list::SignalrList, SignalrContractSerializer,
-    SignalrMessagePublisher, WebSocketCallbacks,
+    my_signal_r_actions::MySignalrActions, signal_r_list::SignalrList, MiddlewareBuilder,
+    SignalrContractSerializer, SignalrMessagePublisher, WebSocketCallbacks,
 };
 
 pub struct MySignalrMiddleware<TCtx: Send + Sync + Default + 'static> {
@@ -22,6 +22,13 @@ pub struct MySignalrMiddleware<TCtx: Send + Sync + Default + 'static> {
 }
 
 impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
+    pub fn new_with_builder(
+        hub_name: &str,
+        signalr_list: Arc<SignalrList<TCtx>>,
+    ) -> MiddlewareBuilder<TCtx> {
+        MiddlewareBuilder::new(hub_name.to_string(), signalr_list)
+    }
+
     pub fn new(
         hub_name: &str,
         signalr_list: Arc<SignalrList<TCtx>>,
