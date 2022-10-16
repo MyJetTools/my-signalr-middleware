@@ -65,7 +65,7 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrConnection<TCtx> {
         }
     }
 
-    pub fn get_list_index(&self) -> &str {
+    pub fn get_list_index(&self) -> &String {
         if let Some(token) = self.connection_token.as_ref() {
             token
         } else {

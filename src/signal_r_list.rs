@@ -9,6 +9,7 @@ use crate::MySignalrConnection;
 struct SignalrListInner<TCtx: Send + Sync + 'static> {
     sockets_by_web_socket_id: HashMap<i64, Arc<MySignalrConnection<TCtx>>>,
     sockets_by_connection_token: HashMap<String, Arc<MySignalrConnection<TCtx>>>,
+    tags: crate::Tags,
 }
 
 pub struct SignalrList<TCtx: Send + Sync + Default + 'static> {
@@ -21,6 +22,7 @@ impl<TCtx: Send + Sync + Default + 'static> SignalrList<TCtx> {
             sockets: RwLock::new(SignalrListInner {
                 sockets_by_web_socket_id: HashMap::new(),
                 sockets_by_connection_token: HashMap::new(),
+                tags: crate::Tags::new(),
             }),
         }
     }
@@ -140,9 +142,15 @@ impl<TCtx: Send + Sync + Default + 'static> SignalrList<TCtx> {
     pub async fn remove(&self, connection_token: &str) -> Option<Arc<MySignalrConnection<TCtx>>> {
         let removed_signalr_connection = {
             let mut write_access = self.sockets.write().await;
-            write_access
+            let removed = write_access
                 .sockets_by_connection_token
-                .remove(connection_token)
+                .remove(connection_token);
+
+            if let Some(removed) = &removed {
+                write_access.tags.remove_connection(&removed.connection_id);
+            }
+
+            removed
         };
 
         if let Some(removed_signalr_connection) = &removed_signalr_connection {
@@ -156,5 +164,61 @@ impl<TCtx: Send + Sync + Default + 'static> SignalrList<TCtx> {
         }
 
         removed_signalr_connection
+    }
+
+    pub async fn add_tag_to_connection(
+        &self,
+        ctx: Arc<MySignalrConnection<TCtx>>,
+        key: &str,
+        value: &str,
+    ) {
+        let mut write_access = self.sockets.write().await;
+
+        if write_access
+            .sockets_by_connection_token
+            .contains_key(ctx.get_list_index())
+        {
+            write_access.tags.add_tag(&ctx.get_list_index(), key, value);
+        }
+    }
+
+    pub async fn remove_tag_from_connection(
+        &self,
+        ctx: Arc<MySignalrConnection<TCtx>>,
+        key: &str,
+        value: &str,
+    ) {
+        let mut write_access = self.sockets.write().await;
+
+        if write_access
+            .sockets_by_connection_token
+            .contains_key(ctx.get_list_index())
+        {
+            write_access
+                .tags
+                .remove_tag(&ctx.get_list_index(), key, value);
+        }
+    }
+
+    pub async fn get_tagged_connections(
+        &self,
+        key: &str,
+        value: &str,
+    ) -> Option<Vec<Arc<MySignalrConnection<TCtx>>>> {
+        let read_access = self.sockets.read().await;
+
+        if let Some(id_s) = read_access.tags.get_tagged_connections(key, value) {
+            let mut result = Vec::with_capacity(id_s.len());
+
+            for id in &id_s {
+                if let Some(connection) = read_access.sockets_by_connection_token.get(id) {
+                    result.push(connection.clone());
+                }
+            }
+
+            return Some(result);
+        }
+
+        None
     }
 }
