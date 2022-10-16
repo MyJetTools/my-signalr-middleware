@@ -41,7 +41,7 @@ impl<
 
     pub async fn send_to_connection(
         &self,
-        connection: Arc<MySignalrConnection<TCtx>>,
+        connection: &MySignalrConnection<TCtx>,
         contract: TContract,
     ) {
         let payload = contract.serialize();
