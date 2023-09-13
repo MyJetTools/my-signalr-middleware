@@ -26,3 +26,5 @@ pub use signal_r_publishers_builder::*;
 pub use tags::Tags;
 pub use tags::*;
 pub use web_socket_callbacks::WebSocketCallbacks;
+mod singal_r_param;
+pub use singal_r_param::*;

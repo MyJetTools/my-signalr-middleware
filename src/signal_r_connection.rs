@@ -2,7 +2,6 @@ use std::sync::{atomic::AtomicBool, Arc};
 
 use hyper_tungstenite::tungstenite::Message;
 use my_http_server_web_sockets::MyWebSocket;
-use my_json::json_writer::JsonObjectWriter;
 use rust_extensions::{
     date_time::{AtomicDateTimeAsMicroseconds, DateTimeAsMicroseconds},
     TaskCompletion,
@@ -13,15 +12,7 @@ use tokio::sync::Mutex;
 #[cfg(feature = "with-ctx")]
 use tokio::sync::RwLock;
 
-pub enum SignalRParam<'s> {
-    JsonObject(&'s JsonObjectWriter),
-    String(&'s str),
-    Number(i64),
-    Float(f64),
-    Boolean(bool),
-    Raw(&'s [Vec<u8>]),
-    None,
-}
+use crate::SignalRParam;
 
 pub struct MySignalrConnectionSingleThreaded {
     web_socket: Option<Arc<MyWebSocket>>,
@@ -164,6 +155,11 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrConnection<TCtx> {
                 .send_message(Message::Text(String::from_utf8(result).unwrap()))
                 .await;
         }
+    }
+
+    pub async fn send_ping_payload(&self) {
+        self.send_raw_payload(crate::messages::get_ping_payload().to_string())
+            .await;
     }
 
     pub async fn send_raw_payload(&self, mut raw_payload: String) {

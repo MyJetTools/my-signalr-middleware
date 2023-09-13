@@ -111,9 +111,7 @@ impl<TCtx: Send + Sync + Default + 'static> my_http_server_web_sockets::MyWebSoc
                     }
 
                     if packet_type == "6" {
-                        signalr_connection
-                            .send_raw_payload(crate::messages::get_ping_payload().to_string())
-                            .await;
+                        signalr_connection.update_incoming_activity();
                     }
                 } else {
                     read_first_payload(signalr_connection, value).await

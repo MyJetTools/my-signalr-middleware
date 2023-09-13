@@ -9,7 +9,7 @@ use crate::{
 
 pub struct MiddlewareBuilder<TCtx: Send + Sync + Default + 'static> {
     hub_name: String,
-    signalr_list: Arc<SignalrConnectionsList<TCtx>>,
+    signal_r_list: Arc<SignalrConnectionsList<TCtx>>,
     actions: MySignalrActions<TCtx>,
     logger: Arc<dyn Logger + Send + Sync + 'static>,
 }
@@ -22,7 +22,7 @@ impl<TCtx: Send + Sync + Default + 'static> MiddlewareBuilder<TCtx> {
     ) -> Self {
         Self {
             hub_name,
-            signalr_list,
+            signal_r_list: signalr_list,
             actions: MySignalrActions::new(),
             logger,
         }
@@ -56,6 +56,6 @@ impl<TCtx: Send + Sync + Default + 'static> MiddlewareBuilder<TCtx> {
     }
 
     pub fn build(self) -> MySignalrMiddleware<TCtx> {
-        MySignalrMiddleware::new(self.hub_name.as_str(), self.signalr_list, self.actions)
+        MySignalrMiddleware::new(self.hub_name.as_str(), self.signal_r_list, self.actions)
     }
 }

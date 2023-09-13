@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use my_http_server_web_sockets::MyWebSocket;
 
@@ -9,7 +9,7 @@ pub async fn process_connect<
     TMySignalrCallbacks: MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static,
 >(
     connections_callback: &Arc<TMySignalrCallbacks>,
-    signalr_list: &Arc<SignalrConnectionsList<TCtx>>,
+    signal_r_list: &Arc<SignalrConnectionsList<TCtx>>,
     negotiation_version: usize,
     web_socket: Option<Arc<MyWebSocket>>,
 ) -> (Arc<MySignalrConnection<TCtx>>, String) {
@@ -30,22 +30,34 @@ pub async fn process_connect<
         &conenction_token,
     );
 
-    let signalr_connection = MySignalrConnection::new(
+    let signal_r_connection = MySignalrConnection::new(
         connection_id,
         conenction_token,
         negotiation_version,
         web_socket,
     );
-    let signalr_connection = Arc::new(signalr_connection);
+    let signal_r_connection = Arc::new(signal_r_connection);
+
+    tokio::spawn(connection_ping_loop(signal_r_connection.clone()));
 
     connections_callback
-        .connected(&signalr_connection)
+        .connected(&signal_r_connection)
         .await
         .unwrap();
 
-    signalr_list
-        .add_signalr_connection(signalr_connection.clone())
+    signal_r_list
+        .add_signalr_connection(signal_r_connection.clone())
         .await;
 
-    (signalr_connection, result)
+    (signal_r_connection, result)
+}
+
+async fn connection_ping_loop<TCtx: Send + Sync + Default + 'static>(
+    connection: Arc<MySignalrConnection<TCtx>>,
+) {
+    let ping_delay = Duration::from_secs(10);
+    while connection.is_connected() {
+        connection.send_ping_payload().await;
+        tokio::time::sleep(ping_delay).await;
+    }
 }
