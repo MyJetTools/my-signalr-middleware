@@ -94,8 +94,10 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrConnection<TCtx> {
     }
 
     pub fn update_incoming_activity(&self) {
-        self.last_incoming_moment
-            .update(DateTimeAsMicroseconds::now());
+        let now = DateTimeAsMicroseconds::now();
+
+        println!("Updating Last incoming to: {}", now.to_rfc3339());
+        self.last_incoming_moment.update(now);
 
         let last_incoming = self.get_last_incoming();
 
