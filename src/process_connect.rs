@@ -55,7 +55,7 @@ pub async fn process_connect<
 async fn connection_ping_loop<TCtx: Send + Sync + Default + 'static>(
     connection: Arc<MySignalrConnection<TCtx>>,
 ) {
-    let ping_delay = Duration::from_secs(10);
+    let ping_delay = Duration::from_secs(5);
     while connection.is_connected() {
         connection.send_ping_payload().await;
         tokio::time::sleep(ping_delay).await;
