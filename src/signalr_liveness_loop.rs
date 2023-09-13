@@ -22,6 +22,8 @@ pub async fn start<TCtx: Send + Sync + Default + 'static>(
         let now = DateTimeAsMicroseconds::now();
         let last_incoming = my_socket_io_connection.get_last_incoming();
 
+        println!("Last incoming: {}", last_incoming.to_rfc3339());
+
         if now.duration_since(last_incoming).as_positive_or_zero() > ping_disconnect {
             #[cfg(feature = "debug_ws")]
             println!(

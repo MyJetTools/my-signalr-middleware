@@ -111,11 +111,7 @@ impl<TCtx: Send + Sync + Default + 'static> my_http_server_web_sockets::MyWebSoc
                     }
 
                     if packet_type == "6" {
-                        let conn = signalr_connection.clone();
-                        tokio::spawn(async move {
-                            tokio::time::sleep(Duration::from_secs(1)).await;
-                            conn.send_ping_payload().await;
-                        });
+                        signalr_connection.send_ping_payload().await;
                     }
                 } else {
                     read_first_payload(signalr_connection, value).await
