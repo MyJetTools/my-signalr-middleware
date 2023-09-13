@@ -38,7 +38,7 @@ pub async fn process_connect<
     );
     let signal_r_connection = Arc::new(signal_r_connection);
 
-    tokio::spawn(connection_ping_loop(signal_r_connection.clone()));
+    //tokio::spawn(connection_ping_loop(signal_r_connection.clone()));
 
     connections_callback
         .connected(&signal_r_connection)
@@ -52,6 +52,7 @@ pub async fn process_connect<
     (signal_r_connection, result)
 }
 
+/*
 async fn connection_ping_loop<TCtx: Send + Sync + Default + 'static>(
     connection: Arc<MySignalrConnection<TCtx>>,
 ) {
@@ -61,3 +62,4 @@ async fn connection_ping_loop<TCtx: Send + Sync + Default + 'static>(
         tokio::time::sleep(ping_delay).await;
     }
 }
+ */
