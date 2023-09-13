@@ -4,6 +4,8 @@ use hyper_tungstenite::tungstenite::Message;
 use my_http_server::HttpFailResult;
 use my_http_server_web_sockets::{MyWebSocket, WebSocketMessage};
 use my_json::json_reader::JsonFirstLineReader;
+#[cfg(feature = "my-telemetry")]
+use my_telemetry::MyTelemetryContext;
 
 use crate::{
     messages::SignalrMessage, MySignalrCallbacks, MySignalrConnection, SignalrConnectionsList,
@@ -101,15 +103,64 @@ impl<TCtx: Send + Sync + Default + 'static> my_http_server_web_sockets::MyWebSoc
                     let packet_type = get_payload_type(value);
 
                     if packet_type == "1" {
+                        #[cfg(feature = "my-telemetry")]
+                        let ctx = MyTelemetryContext::new();
+
+                        #[cfg(feature = "my-telemetry")]
+                        let started = rust_extensions::date_time::DateTimeAsMicroseconds::now();
+
                         let message = SignalrMessage::parse(value);
-                        self.my_signal_r_callbacks
-                            .on(
-                                signalr_connection,
-                                message.headers,
-                                message.target,
-                                message.arguments,
-                            )
-                            .await;
+
+                        #[cfg(feature = "my-telemetry")]
+                        let ctx_spawned = ctx.clone();
+
+                        let signal_r_callbacks = self.my_signal_r_callbacks.clone();
+
+                        let connection_spawned = signalr_connection.clone();
+
+                        let target = message.target.to_string();
+
+                        let arguments = message.arguments.to_vec();
+
+                        let _result = tokio::spawn(async move {
+                            signal_r_callbacks
+                                .on(
+                                    connection_spawned,
+                                    message.headers,
+                                    target,
+                                    arguments,
+                                    #[cfg(feature = "my-telemetry")]
+                                    ctx_spawned,
+                                )
+                                .await;
+                        })
+                        .await;
+
+                        #[cfg(feature = "my-telemetry")]
+                        match _result {
+                            Ok(_) => {
+                                my_telemetry::TELEMETRY_INTERFACE
+                                    .write_success(
+                                        &ctx,
+                                        started,
+                                        message.target.to_string(),
+                                        format!("Executed Ok",),
+                                        None,
+                                    )
+                                    .await;
+                            }
+                            Err(err) => {
+                                my_telemetry::TELEMETRY_INTERFACE
+                                    .write_fail(
+                                        &ctx,
+                                        started,
+                                        message.target.to_string(),
+                                        format!("{:?}", err),
+                                        None,
+                                    )
+                                    .await;
+                            }
+                        }
                     }
 
                     if packet_type == "6" {

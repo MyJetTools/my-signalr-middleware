@@ -73,14 +73,22 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrCallbacks for MySignalrActi
     }
     async fn on(
         &self,
-        signalr_connection: &Arc<MySignalrConnection<Self::TCtx>>,
+        signalr_connection: Arc<MySignalrConnection<Self::TCtx>>,
         headers: Option<HashMap<String, String>>,
-        action_name: &str,
-        data: &[u8],
+        action_name: String,
+        data: Vec<u8>,
+        #[cfg(feature = "my-telemetry")] ctx: my_telemetry::MyTelemetryContext,
     ) {
-        if let Some(action) = self.actions.get(action_name) {
+        if let Some(action) = self.actions.get(action_name.as_str()) {
             action
-                .on(signalr_connection, headers, action_name, data)
+                .on(
+                    &signalr_connection,
+                    headers,
+                    &action_name,
+                    &data,
+                    #[cfg(feature = "my-telemetry")]
+                    &ctx,
+                )
                 .await;
         }
     }

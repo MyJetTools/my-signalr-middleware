@@ -15,10 +15,11 @@ pub trait MySignalrCallbacks {
     async fn on_ping(&self, connection: &Arc<MySignalrConnection<Self::TCtx>>);
     async fn on(
         &self,
-        connection: &Arc<MySignalrConnection<Self::TCtx>>,
+        connection: Arc<MySignalrConnection<Self::TCtx>>,
         headers: Option<HashMap<String, String>>,
-        action_name: &str,
-        data: &[u8],
+        action_name: String,
+        data: Vec<u8>,
+        #[cfg(feature = "my-telemetry")] ctx: my_telemetry::MyTelemetryContext,
     );
 }
 
@@ -42,5 +43,6 @@ pub trait MySignalrPayloadCallbacks {
         headers: Option<HashMap<String, String>>,
         action_name: &str,
         data: &[u8],
+        #[cfg(feature = "my-telemetry")] ctx: &my_telemetry::MyTelemetryContext,
     );
 }
