@@ -36,6 +36,7 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
         hub_name: &str,
         signalr_list: Arc<SignalrConnectionsList<TCtx>>,
         actions: MySignalrActions<TCtx>,
+        disconnect_timeout: std::time::Duration,
     ) -> Self {
         let hub_name = hub_name.to_lowercase();
 
@@ -51,7 +52,7 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
             }),
             socket_id: Mutex::new(0),
             actions,
-            disconnect_timeout: std::time::Duration::from_secs(60),
+            disconnect_timeout,
         }
     }
 

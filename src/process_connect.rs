@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 
 use my_http_server_web_sockets::MyWebSocket;
 
@@ -38,8 +38,6 @@ pub async fn process_connect<
     );
     let signal_r_connection = Arc::new(signal_r_connection);
 
-    //tokio::spawn(connection_ping_loop(signal_r_connection.clone()));
-
     connections_callback
         .connected(&signal_r_connection)
         .await
@@ -51,15 +49,3 @@ pub async fn process_connect<
 
     (signal_r_connection, result)
 }
-
-/*
-async fn connection_ping_loop<TCtx: Send + Sync + Default + 'static>(
-    connection: Arc<MySignalrConnection<TCtx>>,
-) {
-    let ping_delay = Duration::from_secs(5);
-    while connection.is_connected() {
-        connection.send_ping_payload().await;
-        tokio::time::sleep(ping_delay).await;
-    }
-}
- */

@@ -12,6 +12,7 @@ pub struct MiddlewareBuilder<TCtx: Send + Sync + Default + 'static> {
     signal_r_list: Arc<SignalrConnectionsList<TCtx>>,
     actions: MySignalrActions<TCtx>,
     logger: Arc<dyn Logger + Send + Sync + 'static>,
+    disconnect_timeout: std::time::Duration,
 }
 
 impl<TCtx: Send + Sync + Default + 'static> MiddlewareBuilder<TCtx> {
@@ -25,7 +26,13 @@ impl<TCtx: Send + Sync + Default + 'static> MiddlewareBuilder<TCtx> {
             signal_r_list: signalr_list,
             actions: MySignalrActions::new(),
             logger,
+            disconnect_timeout: std::time::Duration::from_secs(60),
         }
+    }
+
+    pub fn set_disconnect_timeout(mut self, disconnect_timeout: std::time::Duration) -> Self {
+        self.disconnect_timeout = disconnect_timeout;
+        self
     }
 
     pub fn with_transport_callback(
@@ -56,6 +63,11 @@ impl<TCtx: Send + Sync + Default + 'static> MiddlewareBuilder<TCtx> {
     }
 
     pub fn build(self) -> MySignalrMiddleware<TCtx> {
-        MySignalrMiddleware::new(self.hub_name.as_str(), self.signal_r_list, self.actions)
+        MySignalrMiddleware::new(
+            self.hub_name.as_str(),
+            self.signal_r_list,
+            self.actions,
+            self.disconnect_timeout,
+        )
     }
 }
