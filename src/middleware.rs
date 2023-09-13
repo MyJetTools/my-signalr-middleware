@@ -20,6 +20,7 @@ pub struct MySignalrMiddleware<TCtx: Send + Sync + Default + 'static> {
     web_socket_callback: Arc<WebSocketCallbacks<TCtx>>,
     signalr_list: Arc<SignalrConnectionsList<TCtx>>,
     actions: Arc<MySignalrActions<TCtx>>,
+    disconnect_timeout: std::time::Duration,
 }
 
 impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
@@ -50,6 +51,7 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrMiddleware<TCtx> {
             }),
             socket_id: Mutex::new(0),
             actions,
+            disconnect_timeout: std::time::Duration::from_secs(60),
         }
     }
 
@@ -118,6 +120,7 @@ impl<TCtx: Send + Sync + Default + 'static> HttpServerMiddleware for MySignalrMi
                     self.web_socket_callback.clone(),
                     id,
                     ctx.request.addr,
+                    self.disconnect_timeout,
                 )
                 .await;
             }

@@ -9,8 +9,6 @@ use crate::{
     messages::SignalrMessage, MySignalrCallbacks, MySignalrConnection, SignalrConnectionsList,
 };
 
-const DISCONNECT_TIMEOUT: Duration = Duration::from_secs(10);
-
 pub struct WebSocketCallbacks<TCtx: Send + Sync + Default + 'static> {
     pub signalr_list: Arc<SignalrConnectionsList<TCtx>>,
     pub my_signal_r_callbacks: Arc<dyn MySignalrCallbacks<TCtx = TCtx> + Send + Sync + 'static>,
@@ -20,7 +18,11 @@ pub struct WebSocketCallbacks<TCtx: Send + Sync + Default + 'static> {
 impl<TCtx: Send + Sync + Default + 'static> my_http_server_web_sockets::MyWebSocketCallback
     for WebSocketCallbacks<TCtx>
 {
-    async fn connected(&self, my_web_socket: Arc<MyWebSocket>) -> Result<(), HttpFailResult> {
+    async fn connected(
+        &self,
+        my_web_socket: Arc<MyWebSocket>,
+        disconnect_timeout: Duration,
+    ) -> Result<(), HttpFailResult> {
         #[cfg(feature = "debug_ws")]
         println!("connected web_socket:{}", my_web_socket.id);
 
@@ -46,7 +48,7 @@ impl<TCtx: Send + Sync + Default + 'static> my_http_server_web_sockets::MyWebSoc
                         self.my_signal_r_callbacks.clone(),
                         self.signalr_list.clone(),
                         signalr_connection,
-                        DISCONNECT_TIMEOUT,
+                        disconnect_timeout,
                     ));
                 }
                 None => {
