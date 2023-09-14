@@ -1,4 +1,7 @@
-use std::sync::{atomic::AtomicBool, Arc};
+use std::{
+    net::SocketAddr,
+    sync::{atomic::AtomicBool, Arc},
+};
 
 use hyper_tungstenite::tungstenite::Message;
 use my_http_server_web_sockets::MyWebSocket;
@@ -211,5 +214,12 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrConnection<TCtx> {
 
     pub fn is_connected(&self) -> bool {
         self.connected.load(std::sync::atomic::Ordering::Relaxed)
+    }
+    pub async fn get_addr(&self) -> Option<SocketAddr> {
+        let read_access = self.single_threaded.lock().await;
+        if let Some(web_socket) = &read_access.web_socket {
+            return Some(web_socket.addr);
+        }
+        None
     }
 }

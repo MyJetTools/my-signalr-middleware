@@ -6,6 +6,8 @@ use my_http_server_web_sockets::{MyWebSocket, WebSocketMessage};
 use my_json::json_reader::JsonFirstLineReader;
 #[cfg(feature = "my-telemetry")]
 use my_telemetry::MyTelemetryContext;
+#[cfg(feature = "my-telemetry")]
+use my_telemetry::TelemetryEventTagsBuilder;
 
 use crate::{
     messages::SignalrMessage, MySignalrCallbacks, MySignalrConnection, SignalrConnectionsList,
@@ -149,7 +151,7 @@ impl<TCtx: Send + Sync + Default + 'static> my_http_server_web_sockets::MyWebSoc
                                         started,
                                         message.target.to_string(),
                                         format!("Executed Ok",),
-                                        tags.build(),
+                                        tags.add_ip(my_web_socket.addr.ip().to_string()).build(),
                                     )
                                     .await;
                             }
@@ -160,7 +162,9 @@ impl<TCtx: Send + Sync + Default + 'static> my_http_server_web_sockets::MyWebSoc
                                         started,
                                         message.target.to_string(),
                                         format!("{:?}", err),
-                                        None,
+                                        TelemetryEventTagsBuilder::new()
+                                            .add_ip(my_web_socket.addr.ip().to_string())
+                                            .build(),
                                     )
                                     .await;
                             }
