@@ -19,7 +19,7 @@ pub trait MySignalrCallbacks {
         headers: Option<HashMap<String, String>>,
         action_name: String,
         data: Vec<u8>,
-        #[cfg(feature = "my-telemetry")] ctx: my_telemetry::MyTelemetryContext,
+        #[cfg(feature = "my-telemetry")] ctx: &mut crate::SignalRTelemetry,
     );
 }
 
@@ -43,6 +43,6 @@ pub trait MySignalrPayloadCallbacks {
         headers: Option<HashMap<String, String>>,
         action_name: &str,
         data: &[u8],
-        #[cfg(feature = "my-telemetry")] ctx: &my_telemetry::MyTelemetryContext,
+        #[cfg(feature = "my-telemetry")] ctx: &mut crate::SignalRTelemetry,
     );
 }

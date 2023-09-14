@@ -123,6 +123,8 @@ impl<TCtx: Send + Sync + Default + 'static> my_http_server_web_sockets::MyWebSoc
                         let arguments = message.arguments.to_vec();
 
                         let _result = tokio::spawn(async move {
+                            #[cfg(feature = "my-telemetry")]
+                            let mut signal_r_telemetry = crate::SignalRTelemetry::new(ctx_spawned);
                             signal_r_callbacks
                                 .on(
                                     connection_spawned,
@@ -130,22 +132,24 @@ impl<TCtx: Send + Sync + Default + 'static> my_http_server_web_sockets::MyWebSoc
                                     target,
                                     arguments,
                                     #[cfg(feature = "my-telemetry")]
-                                    ctx_spawned,
+                                    &mut signal_r_telemetry,
                                 )
                                 .await;
+                            #[cfg(feature = "my-telemetry")]
+                            signal_r_telemetry.tags
                         })
                         .await;
 
                         #[cfg(feature = "my-telemetry")]
                         match _result {
-                            Ok(_) => {
+                            Ok(tags) => {
                                 my_telemetry::TELEMETRY_INTERFACE
                                     .write_success(
                                         &ctx,
                                         started,
                                         message.target.to_string(),
                                         format!("Executed Ok",),
-                                        None,
+                                        tags.build(),
                                     )
                                     .await;
                             }

@@ -77,7 +77,7 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrCallbacks for MySignalrActi
         headers: Option<HashMap<String, String>>,
         action_name: String,
         data: Vec<u8>,
-        #[cfg(feature = "my-telemetry")] ctx: my_telemetry::MyTelemetryContext,
+        #[cfg(feature = "my-telemetry")] ctx: &mut crate::SignalRTelemetry,
     ) {
         if let Some(action) = self.actions.get(action_name.as_str()) {
             action
@@ -87,7 +87,7 @@ impl<TCtx: Send + Sync + Default + 'static> MySignalrCallbacks for MySignalrActi
                     &action_name,
                     &data,
                     #[cfg(feature = "my-telemetry")]
-                    &ctx,
+                    ctx,
                 )
                 .await;
         }

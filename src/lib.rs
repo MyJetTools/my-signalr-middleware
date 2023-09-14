@@ -28,3 +28,7 @@ pub use tags::*;
 pub use web_socket_callbacks::WebSocketCallbacks;
 mod singal_r_param;
 pub use singal_r_param::*;
+#[cfg(feature = "my-telemetry")]
+mod signal_r_telemetry;
+#[cfg(feature = "my-telemetry")]
+pub use signal_r_telemetry::*;
